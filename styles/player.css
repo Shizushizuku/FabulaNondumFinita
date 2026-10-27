@@ -55,3 +55,55 @@ body:has(#player-dialog[open]) #story .story-scenery img{animation-play-state:pa
 }
 @media(max-width:360px){.achievement-grid{grid-template-columns:1fr}}
 @media(max-height:550px){#read-surface{bottom:calc(52px + env(safe-area-inset-bottom,0px))}}
+
+/* Choice history is a label only; it never selects an answer. */
+.choice-question:focus{outline:none}.previous-choice{margin-left:auto;flex-shrink:0;font-size:11px;color:#cbb6a1;border:1px solid #8b725c;padding:3px 7px;letter-spacing:.04em}.read-tools button:disabled{opacity:.3;cursor:not-allowed;text-shadow:none;pointer-events:none}
+@media(max-width:700px){.story-choice{flex-wrap:wrap}.previous-choice{font-size:10px}}
+
+/* Five full-screen paragraphs, followed by a black transition into the story. */
+.story-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px;max-width:50%;text-align:right}
+.intro-recall{pointer-events:auto;color:#b3a695;font-size:11px;letter-spacing:.06em;line-height:1.7;padding:5px 0;min-height:36px;text-shadow:0 2px 12px #000}
+.intro-recall:hover,.intro-recall:focus-visible{color:#eadfce;text-decoration:underline;text-underline-offset:5px}
+body.intro-playing{overflow:hidden}
+.introduction{position:fixed;inset:0;z-index:100;height:100%;height:100dvh;background:radial-gradient(ellipse at 50% 47%,#17130f,#0a0908 65%,#050505);color:#ded4c5;outline:none;isolation:isolate}
+.intro-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:max(40px,env(safe-area-inset-top)) max(32px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(32px,env(safe-area-inset-left));overflow-y:auto}
+.intro-copy{width:min(44em,100%);margin:auto;text-align:center;font-size:clamp(18px,1.6vw,25px);font-weight:400;line-height:2.3;letter-spacing:.085em;overflow-wrap:anywhere;opacity:0;text-shadow:0 2px 24px #0008}
+.intro-blackout{position:absolute;inset:0;z-index:1;pointer-events:none;background:#000;opacity:0}
+.introduction[data-phase=fade-in] .intro-copy{animation:intro-in var(--intro-in) ease-out both}
+.introduction[data-phase=hold] .intro-copy{opacity:1}
+.introduction[data-phase=fade-out] .intro-copy{animation:intro-out var(--intro-out) ease-in both}
+.introduction[data-phase=black] .intro-blackout{animation:intro-in var(--intro-black) ease-in both}
+.introduction[data-phase=reveal]{background:#000;animation:intro-out var(--intro-reveal) ease-out both;pointer-events:none}
+.introduction[data-phase=reveal] .intro-copy{opacity:0}
+.introduction.is-paused,.introduction.is-paused *{animation-play-state:paused!important}
+@keyframes intro-in{from{opacity:0}to{opacity:1}}
+@keyframes intro-out{from{opacity:1}to{opacity:0}}
+@media(max-width:700px){.story-heading-actions{gap:5px;max-width:52%}.intro-recall{font-size:10px;max-width:160px;min-height:44px}.intro-stage{padding-left:max(27px,env(safe-area-inset-left));padding-right:max(27px,env(safe-area-inset-right))}.intro-copy{font-size:clamp(17px,4.6vw,21px);line-height:2.05;letter-spacing:.035em}}
+@media(max-height:500px){.intro-stage{padding-top:22px;padding-bottom:22px}.intro-copy{font-size:17px;line-height:1.8;max-width:48em}}
+
+/* Survival moves gradually from the camp's darkness into warm daylight. */
+.intro-daylight{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;background:#f1ebdf;transition:opacity var(--intro-in) ease-in-out}
+.intro-stage{z-index:1}.intro-blackout{z-index:2}
+.introduction.conclusion .intro-daylight{opacity:var(--daylight,0)}
+.introduction.conclusion .intro-copy{color:var(--conclusion-ink,#faf7f0);text-shadow:none}
+.introduction.conclusion .intro-blackout{background:#f1ebdf}
+.introduction[data-phase=light] .intro-blackout{animation:intro-in var(--intro-black) ease-in both}
+.introduction.conclusion[data-phase=reveal]{background:#f1ebdf}
+#story.bright-ending #ending-screen{background:#f1ebdf;color:#29251f;backdrop-filter:none}
+#story.bright-ending .ending-kicker{color:#706451}#story.bright-ending .ending-copy{color:#625544}
+#story.bright-ending .ending-actions button{color:#493d2f}#story.bright-ending .ending-actions button:focus-visible{outline-color:#79644d}
+@media(prefers-reduced-motion:reduce){.intro-daylight{transition:none}}
+
+/* One expanding seam of light marks the turn from the story to the reader. */
+.intro-copy{white-space:pre-line}
+.finale-effect{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;display:none}
+.introduction[data-phase=threshold] .finale-effect{display:block}
+.finale-veil{position:absolute;inset:0;background:#141310;opacity:0;animation:finale-veil var(--finale-transition) ease-in-out both}
+.finale-slit{position:absolute;top:50%;left:50%;width:130vw;height:2px;background:#fffae9;transform-origin:center;opacity:0;box-shadow:0 0 18px 5px #fff0c8,0 0 65px 18px #dcb67799;animation:finale-open var(--finale-transition) cubic-bezier(.2,.65,.3,1) both}
+.introduction[data-entrance=true][data-phase=fade-in] .intro-copy{animation:finale-words var(--finale-in) ease-out both}
+.introduction[data-section=finale][data-finale-part="2"] .intro-copy{font-size:clamp(26px,3vw,42px);line-height:2.5;letter-spacing:.14em}
+@keyframes finale-veil{0%{opacity:0}23%,40%{opacity:.92}78%,100%{opacity:0}}
+@keyframes finale-open{0%,12%{opacity:0;transform:translate(-50%,-50%) scale(.015,.5)}28%{opacity:1;transform:translate(-50%,-50%) scale(.65,1)}42%{opacity:1;transform:translate(-50%,-50%) scale(1,2)}68%{opacity:.95;transform:translate(-50%,-50%) scale(1,3000)}100%{opacity:0;transform:translate(-50%,-50%) scale(1,3000)}}
+@keyframes finale-words{from{opacity:0;filter:blur(7px);transform:translateY(8px) scale(1.025)}to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.finale-slit{display:none}.finale-veil{background:#fff9ed;animation:finale-soften var(--finale-transition) ease-in-out both}.introduction[data-entrance=true][data-phase=fade-in] .intro-copy{animation:intro-in var(--finale-in) ease-out both}}
+@keyframes finale-soften{0%,100%{opacity:0}50%{opacity:1}}

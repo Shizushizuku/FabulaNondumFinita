@@ -128,9 +128,13 @@ for key,node in nodes.items():
     if not node['paragraphs']:assert node['routes'],key
     assert (ROOT/'assets'/(node['art']+'.png')).is_file(),key
 
+reflection=re.split(r'\n\s*\n',(ROOT/'content/结语.md').read_text().strip())
+finale=re.split(r'\n\s*\n',(ROOT/'content/结语_尾声.md').read_text().strip())
 data={
  'id':'tomorrow-20261027','title':'留待明日','protagonist':'维克多·弗兰克尔','start':'00','readingVersion':3,
  'source':{'file':'content/游戏文案_留待明日.md','sha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest()},
+ 'conclusion':reflection+finale,'conclusionFinaleAt':len(reflection),
+ 'introduction':re.split(r'\n\s*\n',(ROOT/'content/开场白.md').read_text().strip()),
  'chapters':chapter_names,'nodes':nodes,'jokes':jokes,'coverage':coverage,
  'endings':{'death':{'title':'死亡','text':'本次故事结束。'},'survival':{'title':'留待明日','text':'全文完。'}},
  'map':{'nodes':[{'id':n['id'],'title':n['title'],'chapter':n['chapter']} for n in nodes.values()],

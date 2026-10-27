@@ -11,10 +11,11 @@ for(let steps=0;steps<2000;steps++){
   exactKey=saved().pageKey;click('save-read');el('player-panel-body').children.find(x=>x.className.includes('save-slot')).onclick();click('player-panel-close');
   advance();assert.notEqual(saved().pageKey,exactKey);click('load-read');el('player-panel-body').children.filter(x=>x.className.includes('save-slot'))[1].onclick();assert.equal(saved().pageKey,exactKey);manual=true;
  }
+ if(context.window.MeaningIntroduction.isPlaying())t.finishSequence();
  if(!el('ending-screen').hidden)break;
  if(!el('choice-screen').hidden)el('choice-buttons').children[choices[id]??0].onclick();else advance();
 }
-assert.equal(saved().run.nodeId,'22');assert.equal(el('ending-title').textContent,'留待明日');assert.equal(el('ending-copy').textContent,'全文完。');
+assert.equal(saved().run.nodeId,'22');assert.equal(el('ending-title').textContent,'留待明日');assert.equal(el('ending-copy').textContent,'全文完。');assert(el('story').classList.contains('bright-ending'));
 assert(path.includes('20B'));assert(path.includes('21A'));assert(!path.includes('21B'));assert(!path.includes('21'),'routing-only node must not show an empty page');
 const p=context.window.MeaningShell.getProgress();assert(p.visited.includes('21'));assert(p.achievements.includes('N10'));assert.equal(p.snapshots['16'].flags.shared,undefined);
 assert.equal(p.snapshots['16'].flags.record,'letter');
@@ -26,6 +27,7 @@ const node=el('map-inner').children.find(n=>n.attributes['aria-label']==='衣服
 let deathPages=0;
 for(let steps=0;steps<100;steps++){
  if(saved().run.nodeId==='02'&&el('ending-screen').hidden)deathPages++;
+ if(context.window.MeaningIntroduction.isPlaying())t.finishSequence();
  if(!el('ending-screen').hidden)break;
  if(!el('choice-screen').hidden)el('choice-buttons').children[0].onclick();else advance();
 }
