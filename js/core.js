@@ -20,16 +20,24 @@
   }
   function pages(id, flags, name, data, incoming) {
     const scene = data.nodes[id], out = [];
-    if (scene.bulletin) out.push({kind:'bulletin', text:scene.bulletin});
+    if (scene.bulletin) out.push({kind:'bulletin', key:id+':bulletin', text:scene.bulletin});
     const paragraphs = [...(data.transitions[incoming + '>' + id] || []), ...scene.paragraphs];
-    let group = '';
+    let group = '', groupKey='';
+    const flush=()=>{if(group)out.push({kind:'prose',key:groupKey,text:group});group='';groupKey='';};
     for (const para of paragraphs) {
       if (!matches(para.when, flags)) continue;
       const text = para.text.replaceAll('【名字】', name);
-      if (group && group.length + text.length > 125) { out.push({kind:'prose',text:group}); group=''; }
+      const key=para.sourceId+':'+para.segment;
+      if(para.kind==='dialogue'){
+        flush();
+        out.push({kind:'dialogue',key:key+':'+para.sentence,speaker:para.speaker,text:para.speaker+'：“'+text+'”',waitForClick:true});
+        continue;
+      }
+      if (group && group.length + text.length > 125) flush();
+      if(!group)groupKey=key;
       group += (group ? '\n\n' : '') + text;
     }
-    if (group) out.push({kind:'prose',text:group});
+    flush();
     return out;
   }
   const core = {clone, matches, next, options, pages};

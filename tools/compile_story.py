@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import re
+from dialogue import annotate
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT.parent / '生命的意义_互动文案_一万字.md'
@@ -124,7 +125,10 @@ first = ['A','K','T','D','Q','P','C','R3']
 for i, key in enumerate(first, 1):
     nodes[key]['bulletin'] = '\n'.join(bulletins[i])
 
-data = {'nodes': nodes, 'transitions': {k: paragraphs(v) for k,v in transitions.items()},
+for key, node in nodes.items():
+    node['paragraphs'] = annotate(key, node['paragraphs'])
+
+data = {'readingVersion':2, 'nodes': nodes, 'transitions': {k: annotate(k, paragraphs(v)) for k,v in transitions.items()},
         'chapters': ['站台','面包与晚霞','棍子','病区','笑话','纸','火','之后']}
 assert len(nodes) == 61, len(nodes)
 for node in nodes.values():

@@ -1,8 +1,8 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-process.chdir(require('path').resolve(__dirname,'../..'));
+process.chdir(require('path').resolve(__dirname,'..'));
 const context={window:{}};
 vm.createContext(context);
-vm.runInContext(fs.readFileSync('start-screen/js/story-data.js','utf8'),context);
+vm.runInContext(fs.readFileSync('js/story-data.js','utf8'),context);
 const data=context.window.MeaningStory,C=require('../js/core.js');
 const seen=new Set(),ends={},notes=new Set();let routes=0,checks=0;
 function walk(id,flags={},from=null,depth=0){

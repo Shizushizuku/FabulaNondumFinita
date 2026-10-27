@@ -14,7 +14,7 @@
 - 12 项成就、解锁提示、独立页边笺和粉色已解锁卡片。
 - 字号／文字速度设置、手机布局、减少动态效果支持。小屏长文可滚动，底部六个按钮保留触控高度，并处理动态视口与屏幕安全区。
 
-空格或 Enter 继续；Esc 暂停；1 / 2 选择；H 隐藏／恢复正文。快进与自动在选择处停下。
+空格或 Enter 继续；Esc 暂停；1 / 2 选择；H 隐藏／恢复正文。旁白、环境和心理独白默认按段落群停顿；直接对话统一为 `人物：“台词”`，每句话单独一页。自动阅读和快进遇到台词会停止，快进只能补全当前台词，不能越过逐句手动停顿。
 
 ## 美术
 
@@ -26,19 +26,22 @@
 
 ## 后续编辑
 
-`styles/` 存放样式，`js/shell.js` 管理开始界面与记录，`js/player.js` 管理阅读与存档，`js/core.js` 管理分支规则。`js/story-data.js` 从原稿编译，修改剧本后可在上级文件夹运行：
+`styles/` 存放样式，`js/shell.js` 管理开始界面与记录，`js/player.js` 管理阅读与存档，`js/core.js` 管理分支规则。`js/story-data.js` 从原稿编译，对话的说话人与动作拆分标记位于 `tools/dialogue.py`。修改剧本后可在本文件夹运行：
 
 ```sh
-python3 start-screen/tools/compile_story.py
-node start-screen/tools/verify-routes.cjs
-node start-screen/tools/verify-player.cjs
-node start-screen/tools/verify-timing.cjs
+python3 tools/compile_story.py
+node tools/verify-routes.cjs
+node tools/verify-player.cjs
+node tools/verify-timing.cjs
+node tools/verify-reading.cjs
 ```
 
 原开始界面备份在 `.backup/index.before-story.html`；旧演示网页与原稿均未修改。
 
 ## 验证范围
 
-413 条完整选择路径、61 个节点、12 项成就通过分支检查；存档／读取、章节回跳、死亡后重选和生还返回通过无浏览器的控制逻辑测试。全部 405 行叙事和 31 段过渡已核对保留，脚本语法和资源引用检查通过。
+413 条完整选择路径、61 个节点、12 项成就通过分支检查；存档／读取、章节回跳、死亡后重选和生还返回通过无浏览器的控制逻辑测试。原稿的 405 行叙事与 31 段过渡均留有原文记录；展示层将直接对话拆为逐句台词，脚本语法和资源引用检查通过。
 
 浏览器工具的访问策略拦截了本机预览，因此未完成实际浏览器点击与桌面／手机布局验收。新增背景图已逐张查看。
+
+分页更新后，旧存档会回到当前场景开头，保留当时的名字、选择和累计解锁。新存档按稳定的文字片段标识恢复。

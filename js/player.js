@@ -16,15 +16,16 @@
   library.settings.speed=Math.max(0,Math.min(65,Number(library.settings.speed)||0));
   library.settings.font=Math.max(18,Math.min(28,Number(library.settings.font)||22));
   function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(library));return true;}catch{if(!storageFailed){toast('浏览器未能保存，当前进度仍可继续阅读。');storageFailed=true;}return false;}}
-  function snapshot(){return {savedAt:new Date().toISOString(),run:copy(run),pageIndex,log:copy(log.slice(-400))};}
+  function snapshot(){return {savedAt:new Date().toISOString(),readingVersion:S.readingVersion,pageKey:pageList[pageIndex]?.key,run:copy(run),pageIndex,log:copy(log.slice(-400))};}
   function autosave(){if(!run)return;library.autosave=snapshot();persist();updateContinue();}
   function halt(){clearTimeout(textTimer);clearTimeout(advanceTimer);textTimer=0;advanceTimer=0;}
-  function setMode(type){if(type==='auto'){auto=!auto;skip=false;}else if(type==='skip'){skip=!skip;auto=false;}else{auto=false;skip=false;}
+  function setMode(type){const speech=pageList[pageIndex]?.waitForClick;
+    if(speech){auto=false;skip=false;}else if(type==='auto'){auto=!auto;skip=false;}else if(type==='skip'){skip=!skip;auto=false;}else{auto=false;skip=false;}
     el('auto-read').setAttribute('aria-pressed',auto);el('skip-read').setAttribute('aria-pressed',skip);
     el('auto-read').textContent=auto?'自动中':'自动';el('skip-read').textContent=skip?'快进中':'快进';
-    clearTimeout(advanceTimer);if(skip&&typing)completeText();else schedule();
+    clearTimeout(advanceTimer);if((skip||(speech&&type==='skip'))&&typing)completeText();else schedule();
   }
-  function schedule(){clearTimeout(advanceTimer);if(!active||typing||choiceOpen||el('player-dialog').open||!el('ending-screen').hidden)return;
+  function schedule(){clearTimeout(advanceTimer);if(!active||typing||choiceOpen||pageList[pageIndex]?.waitForClick||el('player-dialog').open||!el('ending-screen').hidden)return;
     if(skip||auto){const delay=skip?110:Math.max(1800,chars.length*90);advanceTimer=setTimeout(advance,delay);}}
   function announceAchievement(id){toastQueue.push(id);if(!toastTimer)showAchievement();}
   function showAchievement(){const id=toastQueue.shift();if(!id){toastTimer=0;return;}el('achievement-toast-name').textContent=ACH_NAMES[Number(id.slice(1))];el('achievement-toast').hidden=false;
@@ -41,8 +42,13 @@
   function startNew(name){const p=shell.getProgress();pendingUnlocks=[];log=[];run={version:2,nodeId:'A',incoming:null,flags:{},name:name.trim().slice(0,24)||'无名',choices:[],initialNodes:p.visited.length,initialAchievements:p.achievements.length};
     setMode();beginEntry('A');}
   function restore(save){if(!validSave(save)){toast('这份存档无法读取。');return;}run=copy(save.run);log=copy(save.log);pendingUnlocks=[];
-    pageList=C.pages(run.nodeId,run.flags,run.name,S,run.incoming);pageIndex=Math.min(save.pageIndex,pageList.length-1);pageLogged=!!log.some(l=>l.key===run.nodeId+':'+pageIndex);
-    shell.visit(run.nodeId,copy(run));setMode();showPlayer();render();el('read-surface').focus({preventScroll:true});}
+    pageList=C.pages(run.nodeId,run.flags,run.name,S,run.incoming);
+    const updated=save.readingVersion!==S.readingVersion;
+    const found=pageList.findIndex(p=>p.key===save.pageKey);
+    pageIndex=updated?0:found>=0?found:Math.min(save.pageIndex,pageList.length-1);
+    pageLogged=!!log.some(l=>l.key===run.nodeId+'|'+pageList[pageIndex].key);
+    shell.visit(run.nodeId,copy(run));setMode();showPlayer();render();el('read-surface').focus({preventScroll:true});
+    if(updated)toast('文字分页已更新，已回到当前场景开头；你的选择和成就仍保留。');}
   shell.onStart(({nodeId,newRun,state})=>{if(newRun){openPanel('name');return;}if(!validRun(state)){toast('这个节点缺少完整记录，请从押运车开始。');return;}
     setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});
   function switchArt(name){if(lastArt===name)return;lastArt=name;const token=++displayToken;
@@ -53,18 +59,22 @@
     switchArt(scene.art);el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='C1'?'fire':'';
     el('chapter-caption').textContent=String(scene.chapter).padStart(2,'0')+' / '+S.chapters[scene.chapter-1];
     el('scene-caption').textContent=scene.title.replace(/^(【结算】|主要[①④⑤]：|伏笔[②③]：|新?复合伏笔[甲乙丙]：)/,'');
-    el('reader-name').textContent=run.nodeId==='DT'||scene.chapter===8?run.name:'A-1173';
+    el('reader-name').textContent=page.kind==='dialogue'?page.speaker:run.nodeId==='DT'||scene.chapter===8?run.name:'A-1173';
+    el('story').dataset.readingKind=page.kind;
+    el('auto-read').disabled=page.kind==='dialogue';
+    el('text-window').scrollTop=0;
     el('page-number').textContent=String(pageIndex+1).padStart(2,'0')+' / '+String(pageList.length).padStart(2,'0');
     el('story').classList.toggle('bulletin-page',page.kind==='bulletin');el('bulletin-sheet').hidden=page.kind!=='bulletin';el('text-window').hidden=page.kind==='bulletin';
     const target=page.kind==='bulletin'?el('bulletin-copy'):el('story-copy');el('story-copy').textContent='';el('bulletin-copy').textContent='';
     chars=Array.from(page.text);visible=0;typing=true;el('continue-mark').hidden=true;el('bulletin-continue').hidden=true;
-    el('reader-hint').textContent='点击或空格，显示整段';applySettings();
+    el('reader-hint').textContent=page.kind==='dialogue'?'点击或空格，显示整句':'点击或空格，显示整段';applySettings();
     if(skip||reduced||library.settings.speed===0){visible=chars.length;target.textContent=page.text;finishText();}
     else{const tick=()=>{if(!active||el('player-dialog').open)return;visible++;target.textContent=chars.slice(0,visible).join('');
       if(visible>=chars.length){finishText();return;}const char=chars[visible-1];textTimer=setTimeout(tick,library.settings.speed*(/[。！？]/.test(char)?5:/[，；：]/.test(char)?2:1));};resumeType=tick;tick();}
     autosave();}
-  function finishText(){clearTimeout(textTimer);resumeType=null;typing=false;el('continue-mark').hidden=false;el('bulletin-continue').hidden=false;el('reader-hint').textContent='点击或空格，继续';
-    if(!pageLogged){const page=pageList[pageIndex];log.push({key:run.nodeId+':'+pageIndex,chapter:S.chapters[S.nodes[run.nodeId].chapter-1],text:page.text});pageLogged=true;}
+  function finishText(){clearTimeout(textTimer);resumeType=null;typing=false;el('continue-mark').hidden=false;el('bulletin-continue').hidden=false;el('reader-hint').textContent=pageList[pageIndex].kind==='dialogue'?'点击或空格，继续下一句':'点击或空格，继续';
+    if(!pageLogged){const page=pageList[pageIndex];log.push({key:run.nodeId+'|'+page.key,chapter:S.chapters[S.nodes[run.nodeId].chapter-1],text:page.text});pageLogged=true;}
+    if(pageList[pageIndex].waitForClick)setMode();
     if(pageIndex===pageList.length-1)unlockNotes();autosave();schedule();}
   function completeText(){const page=pageList[pageIndex];(page.kind==='bulletin'?el('bulletin-copy'):el('story-copy')).textContent=page.text;visible=chars.length;finishText();}
   function advance(){if(!active||el('player-dialog').open||choiceOpen||!el('ending-screen').hidden)return;if(el('story').classList.contains('hide-text')){el('story').classList.remove('hide-text');return;}if(typing){completeText();return;}halt();
