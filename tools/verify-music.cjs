@@ -17,7 +17,7 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
  music.scene('06A');await flush();assert(t.audios.some(a=>a.src===data.tracks.sunset.file&&!a.paused));
  const ramps=t.audioContexts[0].gains.slice(1).map(g=>g.events.filter(e=>e[0]==='ramp').at(-1));assert(ramps.some(r=>r[1]===0)&&ramps.some(r=>r[1]===1),'old and new decks ramp in opposite directions');
  t.elapse(1600);assert.equal(t.audios.filter(a=>!a.paused).length,1);
- music.sequence('opening');await flush();music.scene('07');await flush();assert(t.audios.some(a=>a.src===data.tracks.opening.file&&!a.paused),'intro owns the cue over hidden story setup');
+ music.sequence('opening');await flush();music.scene('08');await flush();assert(t.audios.some(a=>a.src===data.tracks.opening.file&&!a.paused),'intro owns the cue over hidden story setup');
  music.endSequence();await flush();assert(t.audios.some(a=>a.src===data.tracks.snow.file&&!a.paused));
  music.sequence('ending');await flush();music.view('home');await flush();assert(t.audios.some(a=>a.src===data.tracks.ending.file&&!a.paused),'ending music continues through the end card');
  music.endSequence();await flush();assert(t.audios.some(a=>a.src===data.tracks.calm3.file&&!a.paused));
@@ -30,6 +30,20 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
  assert(rapid.audios.some(a=>a.src===data.tracks.ending.file&&!a.paused));assert.equal(rapid.audios.length,2);
  m.endSequence();m.scene('06A');const failed=rapid.audios.find(a=>a.src===data.tracks.sunset.file);failed.onerror();await flush();assert(rapid.el('music-toggle').textContent.includes('重试'));
  rapid.click('music-toggle');await flush();assert(rapid.audios.some(a=>a.src===data.tracks.sunset.file&&!a.paused),'retry reloads the failed media source');
+ // Whole narrative arcs retain their music across choices; sunset carries into morning.
+ const steady=createEnv(true,null,true,{audio:true,webAudio:true});const steadyMusic=steady.context.window.MeaningMusic;
+ steadyMusic.unlock();steadyMusic.view('story');steadyMusic.scene('06A',{sunset:true});await flush();
+ const sunsetCalls=steady.audios.reduce((n,a)=>n+a.playCalls,0);steadyMusic.scene('07',{sunset:true});await flush();assert.equal(steady.audios.reduce((n,a)=>n+a.playCalls,0),sunsetCalls);
+ steadyMusic.scene('08');await flush();const winterCalls=steady.audios.reduce((n,a)=>n+a.playCalls,0);
+ for(const id of ['08A','09','09A','10','10A','11','11B','12','12A','13','13B','14','14B']){steadyMusic.scene(id);await flush();}
+ assert.equal(steady.audios.reduce((n,a)=>n+a.playCalls,0),winterCalls,'winter choices do not switch or restart the cue');
+ const core=require('../js/core.js'),survivalChanges=[];
+ function count(id,flags,previous=null,changes=0){
+  const rule=data.sceneRules?.[id],cue=rule?(flags[rule.flag]?rule.yes:rule.no):data.scenes[id];changes+=previous&&cue!==previous?1:0;
+  const node=story.nodes[id];if(node.end){if(node.end==='survival')survivalChanges.push(changes);return;}
+  if(node.options.length)for(const choice of node.options)count(choice.to,{...flags,...choice.set},cue,changes);else count(core.next(id,flags,story.nodes),flags,cue,changes);
+ }
+ count(story.start,{});assert(survivalChanges.length>0);assert.equal(Math.min(...survivalChanges),4);assert.equal(Math.max(...survivalChanges),5);
  // Desktop file preview has a volume-based fade when Web Audio is unavailable.
  const fallback=createEnv(true,null,true,{audio:true});fallback.context.window.MeaningMusic.unlock();await flush();fallback.elapse(800);
  assert(fallback.audios.some(a=>a.volume>0&&a.volume<.35));fallback.elapse(800);assert(fallback.audios.some(a=>Math.abs(a.volume-.35)<1e-6));

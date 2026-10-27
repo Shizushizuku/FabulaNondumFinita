@@ -89,7 +89,7 @@
     launchWithIntroduction(()=>{setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});});
   function render(){halt();choiceOpen=false;setModal(false);el('choice-screen').hidden=true;el('ending-screen').hidden=true;el('story').classList.remove('bright-ending');el('theory-note').hidden=true;
     const scene=S.nodes[run.nodeId],page=pageList[pageIndex];if(!page)throw Error('Empty story page '+run.nodeId);
-    music.scene(run.nodeId);backgrounds.switchTo(scene.art);const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);backgrounds.prefetch(nextIds.map(id=>S.nodes[id].art));el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':'';
+    music.scene(run.nodeId,run.flags);backgrounds.switchTo(scene.art);const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);backgrounds.prefetch(nextIds.map(id=>S.nodes[id].art));el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':'';
     el('chapter-caption').textContent=String(scene.chapter).padStart(2,'0')+' / '+S.chapters[scene.chapter-1];
     el('scene-caption').textContent=scene.title;
     el('reader-name').textContent=page.kind==='dialogue'?page.speaker:S.protagonist;

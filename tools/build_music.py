@@ -11,12 +11,15 @@ TRACKS={
  'calm3':('023','calm-three','主页、演出、笑话与写作')
 }
 SCENES={
- 'tension':['00','01','02','04','04B','08','08B','12B','14','14A','18','19','19A'],
- 'calm1':['03','04A','05','05A','05B','06','06B','08A','10','10B','14B'],
- 'snow':['07','09B','12','16','17B'],
- 'calm2':['09','09A','12A','13','13B','15','15A','16A','16B','17','17A','19B','20','20A','20B','20C','21','21A'],
- 'calm3':['10A','11','11A','11B','13A','15B','21B','22'], 'sunset':['06A']
+ 'tension':['00','01','02','08B','12B','14A','19A'],
+ 'calm1':['03','04','04A','04B','05','05A','05B','06','06B','07'],
+ 'sunset':['06A'],
+ 'snow':['08','08A','09','09A','09B','10','10A','10B','11','11A','11B','12','12A','13','13A','13B','14','14B'],
+ 'calm2':['15','15A','15B','16','16A','16B','17','17A','17B','18','19','19B'],
+ 'calm3':['20','20A','20B','20C','21','21A','21B','22']
 }
+SCENE_RULES={'07':{'flag':'sunset','yes':'sunset','no':'calm1'}}
+
 def flac_duration(path):
  data=path.read_bytes();assert data[:4]==b'fLaC'
  position=4
@@ -38,7 +41,7 @@ for key,(number,slug,description) in TRACKS.items():
   'sourceSha256':hashlib.sha256(source.read_bytes()).hexdigest(),'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
  print(key,tracks[key]['duration'],'seconds,',target.stat().st_size,'bytes')
 scenes={scene:key for key,ids in SCENES.items() for scene in ids};assert len(scenes)==sum(map(len,SCENES.values()))==56
-manifest={'format':'audio/mp4; codecs="mp4a.40.2"','fadeMs':1600,'tracks':tracks,'scenes':scenes,'menu':'calm3'}
+manifest={'format':'audio/mp4; codecs="mp4a.40.2"','fadeMs':1600,'tracks':tracks,'scenes':scenes,'sceneRules':SCENE_RULES,'menu':'calm3'}
 (OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 runtime={**manifest,'tracks':{key:{'file':value['file'],'duration':value['duration']} for key,value in tracks.items()}}
 (ROOT/'js/music-data.js').write_text('/* Generated from the music filenames and scene mapping by tools/build_music.py. */\nwindow.MeaningMusicData = '+json.dumps(runtime,ensure_ascii=False,separators=(',',':'))+';\n')

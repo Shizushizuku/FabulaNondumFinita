@@ -4,7 +4,7 @@
   const data=window.MeaningMusicData,button=document.getElementById('music-toggle'),KEY='tomorrow.audio.v1';
   let settings={enabled:true,volume:.35};try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)settings={enabled:saved.enabled!==false,volume:Math.max(0,Math.min(1,Number(saved.volume)||0))};}catch{}
   let context=null,master=null,decks=[],unlocked=false,blocked=false,failed=false,hidden=false,ducked=false;
-  let view='home',scene=null,sequence=null,desired=data.menu,version=0,active=null,pending=null;
+  let view='home',scene=null,sceneFlags={},sequence=null,desired=data.menu,version=0,active=null,pending=null;
   const positions=new Map();
   const now=()=>context?context.currentTime*1000:Date.now();
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings));}catch{}}
@@ -52,7 +52,11 @@
   function quiet(deck,duration=data.fadeMs){
     fade(deck,0,duration,()=>{if(deck!==active&&deck!==pending){remember(deck);deck.audio.pause();}});
   }
-  function chosen(){return sequence==='opening'?'opening':sequence==='ending'?'ending':view==='story'&&scene?data.scenes[scene]:data.menu;}
+  function chosen(){
+    if(sequence)return sequence==='opening'?'opening':'ending';
+    if(view!=='story'||!scene)return data.menu;
+    const rule=data.sceneRules?.[scene];return rule?(sceneFlags[rule.flag]?rule.yes:rule.no):data.scenes[scene];
+  }
   function select(){const key=chosen();if(!key)return;if(key!==desired){desired=key;version++;}playDesired();}
   function playDesired(){
     status();if(!settings.enabled||!unlocked||hidden||!ensure())return;
@@ -102,7 +106,7 @@
     else if(unlocked&&settings.enabled)unlock();
   });
   window.MeaningMusic=Object.freeze({
-    scene(id){scene=id;select();},view(id){view=id;select();},
+    scene(id,flags={}){scene=id;sceneFlags=flags;select();},view(id){view=id;select();},
     sequence(kind){sequence=kind;select();},endSequence(){sequence=null;select();},
     duck(value){ducked=value;applyVolume();},
     getSettings:()=>({...settings}),setVolume(value){settings.volume=Math.max(0,Math.min(1,value));persist();applyVolume();},setEnabled,
