@@ -40,7 +40,7 @@ if __name__=='__main__':
     regular=required_characters();manifest={'upstream':upstream,'license':'OFL.txt','fonts':[]}
     for weight,style,family,ps,filename,characters in [
         (400,'Regular','Tomorrow Songti','TomorrowSongti-Regular','tomorrow-songti.woff2',regular),
-        (900,'Heavy','Tomorrow Mincho Title','TomorrowMinchoTitle-Heavy','tomorrow-mincho-title.woff2',{ord(c) for c in '始终'})
+        (900,'Heavy','Tomorrow Mincho Title','TomorrowMinchoTitle-Heavy','tomorrow-mincho-title.woff2',regular)
     ]:
         source_name='SourceHanSerifSC-'+style+'.otf';font=TTFont(args.source_dir/source_name,recalcTimestamp=False)
         cmap=font.getBestCmap();supported=characters&set(cmap);missing=sorted(characters-set(cmap))

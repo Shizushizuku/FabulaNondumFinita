@@ -1,0 +1,86 @@
+/* In-game type and controls: white ink, grey disabled actions, painted scenery. */
+:root{--font-eva:"Tomorrow Mincho Title","Songti SC","STSong",serif;font-family:var(--font-story)}
+#home{font-family:var(--font-story)}
+#home h1{font-family:var(--font-eva);font-weight:900;font-synthesis:none;transform:scaleX(.87);letter-spacing:.18em}
+
+#story,#player-dialog{color:#fff;--paper:#fff;--rose:#fff}
+#story *,#player-dialog *,body:has(#story:not([hidden])) :is(#dialog,#dialog *,#notice,.music-toggle,.achievement-toast,.achievement-toast *){
+  color:#fff!important;font-family:var(--font-eva)!important;font-weight:900!important;font-synthesis:none;
+}
+#story .story-copy,#player-dialog .backlog article:not(.log-choice) p{font-family:var(--font-story)!important;font-weight:400!important}
+#story button:disabled,#story button:disabled *,#player-dialog button:disabled,#player-dialog button:disabled *{color:#777!important;opacity:1;cursor:not-allowed}
+#story :focus-visible,#player-dialog :focus-visible,body:has(#story:not([hidden])) :is(#dialog,.music-toggle) :focus-visible{outline-color:#fff}
+
+.story-heading{z-index:2;gap:22px}
+.story-chapter{border:0;padding:0;max-width:58%;line-height:1.2;font-size:clamp(23px,2.6vw,34px);letter-spacing:.025em}
+.story-chapter small{display:block;margin-top:10px;font-size:clamp(15px,1.5vw,20px);line-height:1.35;letter-spacing:.08em}
+.story-heading-actions{padding-top:30px;gap:12px;max-width:42%;min-width:0}
+.story-brand{font-size:clamp(25px,2.8vw,38px);line-height:1;letter-spacing:.16em;opacity:1;transform:scaleX(.78);transform-origin:right top;padding-top:0;white-space:nowrap}
+.intro-recall{font-size:12px;line-height:1.8;max-width:230px;min-height:44px;padding:7px 0;text-align:right;letter-spacing:.04em}
+.intro-recall.is-leaving{pointer-events:none}
+.intro-recall:hover,.intro-recall:focus-visible{text-decoration:underline;text-underline-offset:5px}
+
+.text-window{border:1px solid #fff;border-radius:18px;background:#080808db;box-shadow:0 12px 55px #0005;scrollbar-color:#777 transparent}
+.reader-label{letter-spacing:.08em}
+.reader-label span:first-child:after{content:none;padding:0}
+.reader-label #page-number{font-family:var(--font-eva);font-weight:900}
+.read-tools button:last-child{border-left-color:#ffffff66}
+.read-tools button[aria-pressed=true]{border-bottom:1px solid #fff;box-shadow:none;text-decoration:underline;text-underline-offset:6px}
+.theory-note{background:#080808d9;border-color:#fff}
+.hide-text #read-surface:after{color:#fff;font-family:var(--font-eva)}
+
+/* Bare intertitles share the finale's blurred, gently settling entrance. */
+.bulletin-sheet{left:50%;top:50%;width:min(1050px,90vw);padding:0;border:0;border-radius:0;background:none;box-shadow:none;pointer-events:none}
+.bulletin-sheet:before{content:none}
+.bulletin-copy{min-height:0;text-align:center;white-space:pre-line;font-size:clamp(22px,3.5vw,48px);line-height:1.7;letter-spacing:.055em;text-shadow:0 3px 24px #000}
+.bulletin-page .story-shade{background:#0007}
+.bulletin-page :is(.read-footer,.story-heading){visibility:hidden;pointer-events:none}
+.bulletin-page #read-surface{inset:0;cursor:default}
+.bulletin-page[data-caption-phase=enter] .bulletin-copy{animation:finale-words .6s ease-out both}
+.bulletin-page[data-caption-phase=hold] .bulletin-copy{opacity:1}
+.bulletin-page[data-caption-phase=exit] .bulletin-copy{animation:intertitle-out .4s ease-in both}
+.bulletin-page.caption-paused .bulletin-copy{animation-play-state:paused}
+@keyframes intertitle-out{from{opacity:1;filter:blur(0)}to{opacity:0;filter:blur(5px)}}
+
+.story-modal{background:#000b}
+.story-choice{border:1px solid #fff;border-radius:12px;background:#080808d9;font-size:18px;letter-spacing:.025em}
+.story-choice:hover,.story-choice:focus-visible{border-color:#fff;background:#242424ed}
+.story-choice>span:first-child{font-family:var(--font-eva);font-size:13px}
+.previous-choice{border-color:#fff;border-radius:4px;font-size:11px}
+.choice-question{font-size:clamp(22px,2.6vw,30px)}
+#ending-screen{background:#050505ed}
+#player-dialog,body:has(#story:not([hidden])) #dialog{background:#080808f5;border:1px solid #fff;border-radius:16px}
+#player-dialog::backdrop,body:has(#story:not([hidden])) #dialog::backdrop{background:#000b}
+#player-dialog .panel-button{border:1px solid #ffffff80;border-radius:9px;background:#101010}
+#player-dialog .panel-button.primary{border-color:#fff}
+#player-dialog .panel-button:hover{background:#282828;border-color:#fff}
+#player-dialog input{accent-color:#fff;color-scheme:dark}
+#player-dialog input[type=text]{border-color:#fff;background:#111}
+#player-dialog .backlog{scrollbar-color:#777 transparent}
+#player-dialog .backlog article{border-bottom-color:#ffffff4d}
+body:has(#story:not([hidden])) .achievement-toast{background:#080808ed;border:1px solid #fff;border-radius:12px}
+body:has(#story:not([hidden])) :is(.notice,.music-toggle){background:#080808e6;border-color:#fff}
+body:has(#story:not([hidden])) .music-toggle:focus-visible{outline-color:#fff}
+
+@media(max-width:700px){
+  .story-heading{left:max(20px,env(safe-area-inset-left));right:max(20px,env(safe-area-inset-right));gap:12px}
+  .story-chapter{font-size:25px;max-width:57%}
+  .story-chapter small{font-size:16px;margin-top:9px}
+  .story-heading-actions{max-width:43%;padding-top:37px;gap:10px}
+  .story-brand{font-size:27px}
+  .intro-recall{font-size:11px;max-width:175px}
+  .text-window{border-radius:14px}
+  .bulletin-copy{font-size:clamp(20px,5.8vw,30px);line-height:1.85}
+  .story-choice{font-size:16px;padding:19px 20px}
+}
+@media(max-height:550px){
+  .story-heading{top:max(12px,env(safe-area-inset-top))}
+  .story-chapter{font-size:22px}
+  .story-chapter small{display:block;font-size:14px;margin-top:5px}
+  .story-heading-actions{padding-top:26px;gap:6px}
+  .story-brand{font-size:23px}
+  .intro-recall{font-size:10px;min-height:36px;padding:4px 0}
+  .text-window{border-radius:12px}
+  .bulletin-copy{font-size:clamp(20px,4.5vw,34px);line-height:1.5}
+}
+@media(prefers-reduced-motion:reduce){.bulletin-copy{animation:none!important;filter:none!important}}

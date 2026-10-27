@@ -23,9 +23,11 @@ visibility(false);assert(timers.size>0);assert(!el('introduction').classList.con
 const first=finishIntro(t);assert.deepEqual(first.shown,expected);assert.equal(first.phases.filter(p=>p==='fade-in').length,5);assert(first.phases.includes('black'));assert(first.phases.includes('reveal'));
 assert(intro.hasSeen());assert.equal(mem.get('tomorrow.introduction.v1'),'seen');assert(el('introduction').hidden);assert(!el('game-main').inert);assert.equal(saved().run.nodeId,'00');assert(el('intro-recall').hidden);
 // Later starts skip the opening. Replay suspends automatic reading without changing the save.
-start();assert(!intro.isPlaying());assert(!el('intro-recall').hidden);advance();click('auto-read');
+start();assert(!intro.isPlaying());assert(el('intro-recall').hidden);
+for(let i=0;el('intro-recall').hidden;i++){assert(i<30);advance();}
+assert.equal(el('story').dataset.readingKind,'dialogue');click('auto-read');
 const before=JSON.stringify(saved());click('intro-recall');assert(intro.isPlaying());assert.equal(el('auto-read').attributes['aria-pressed'],false);
-finishIntro(t);assert.equal(JSON.stringify(saved()),before);assert(!el('intro-recall').hidden);assert.equal(context.document.activeElement,el('read-surface'));
+finishIntro(t);assert.equal(JSON.stringify(saved()),before);assert(el('intro-recall').hidden);assert.equal(context.document.activeElement,el('read-surface'));
 // A new page load remembers the first viewing, including when continuing an existing save.
 const loaded=createEnv(true,JSON.parse(mem.get('tomorrow.player.v1')),true);loaded.click('continue-story');
 assert(!loaded.context.window.MeaningIntroduction.isPlaying());assert(!loaded.el('intro-recall').hidden);assert.equal(loaded.saved().pageKey,saved().pageKey);

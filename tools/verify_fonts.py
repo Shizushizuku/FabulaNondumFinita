@@ -21,7 +21,7 @@ for item in data['fonts']:
     assert 'Adobe' in font['name'].getDebugName(0)
     assert 'Open Font License' in font['name'].getDebugName(13)
     cmap=font.getBestCmap();assert set(cmap)==set(item['unicode'])
-    missing=required_characters()-set(cmap) if item['weight']==400 else {ord(c) for c in '始终'}-set(cmap)
+    missing=required_characters()-set(cmap)
     assert missing=={int(c['codepoint'],16) for c in item['fallbackCharacters']}
     assert not [c for c in missing if 0x3400<=c<=0x9fff]
     glyphs=font.getGlyphSet()

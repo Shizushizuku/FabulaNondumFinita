@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark">
 <title>留待明日 · 追寻生命的意义</title>
-<link rel="preload" href="assets/fonts/tomorrow-songti.woff2?v=narrative-sunset-20261027" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=narrative-sunset-20261027"><link rel="stylesheet" href="styles/fonts.css?v=narrative-sunset-20261027">
+<link rel="preload" href="assets/fonts/tomorrow-songti.woff2?v=monochrome-20261027" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2?v=monochrome-20261027" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=monochrome-20261027"><link rel="stylesheet" href="styles/fonts.css?v=monochrome-20261027">
+<link rel="stylesheet" href="styles/game-ui.css?v=monochrome-20261027">
 </head><body>
 <div class="scene" aria-hidden="true">
 <!-- Background: AI redrawing inspired by camp architecture; not a documentary photograph. -->
@@ -14,11 +15,10 @@
 <div id="scene-curtain" class="scene-curtain" aria-hidden="true" hidden></div>
 <main id="game-main">
 <section id="home" class="cover reveal" aria-label="开始界面">
-<div class="edition">一份尚未合上的记录</div><div class="vertical">追寻生命的意义</div>
+<div class="vertical">追寻生命的意义</div>
 <p class="overline">在结局到来之前</p><h1>留待明日</h1><div class="hairline"></div>
 <nav class="menu" aria-label="主菜单"><button id="start">从押运车开始</button><button id="continue-story" hidden>继续</button><button id="chapters">按章节开始</button><button id="achievements">成就</button></nav>
 <button class="motion-button" id="motion" aria-pressed="false">暂停背景动态</button>
-<div class="colophon">以维克多·弗兰克尔的经历为原型<span>对白、配角与分支经过文学改编 · 死亡路线属于假设分支</span></div>
 </section>
 <section id="map" class="view" hidden aria-labelledby="map-title"><header class="view-head"><button class="back" data-home>← 返回开始</button><span class="brand">留待明日</span><button class="back" id="to-achievements">成就 →</button></header>
 <h2 class="heading" id="map-title" tabindex="-1">走过的路</h2><p class="sub" id="map-status"></p>
@@ -31,7 +31,7 @@
   <div class="story-scenery" aria-hidden="true"><img id="story-background" src="assets/train.png" alt=""><img id="story-background-next" alt=""></div><div class="story-shade"></div><div class="story-dust"></div>
   <header class="story-heading"><div class="story-chapter"><span id="chapter-caption"></span><small id="scene-caption"></small></div><div class="story-heading-actions"><button id="retry-background" class="retry-background" hidden>背景未加载，点击重试</button><span class="story-brand">留待明日</span><button id="intro-recall" class="intro-recall" hidden>开场白已跳过，点击此处回顾</button></div></header>
   <div id="read-surface" tabindex="0" role="button" aria-label="继续阅读，空格或 Enter 继续">
-    <div class="bulletin-sheet" id="bulletin-sheet" hidden><p class="bulletin-copy" id="bulletin-copy"></p><div class="bulletin-continue" id="bulletin-continue" hidden>点击，继续　↵</div></div>
+    <div class="bulletin-sheet" id="bulletin-sheet" hidden><p class="bulletin-copy" id="bulletin-copy"></p></div>
     <div class="text-window" id="text-window"><div class="reader-label"><span id="reader-name">维克多·弗兰克尔</span><span id="page-number"></span></div><p class="story-copy" id="story-copy"></p><span class="reader-hint" id="reader-hint"></span><span class="continue-mark" id="continue-mark" hidden>↵</span><span class="next-page" id="next-page" aria-hidden="true">›</span></div>
   </div>
   <footer class="read-footer"><button class="theory-note" id="theory-note" hidden></button><div></div><nav class="read-tools" aria-label="阅读控制"><button id="log-read">回看</button><button id="auto-read" aria-pressed="false">自动</button><button id="skip-read" aria-pressed="false">快进</button><button id="save-read">保存</button><button id="load-read">读取</button><button id="pause-read">暂停</button></nav></footer>
@@ -49,5 +49,5 @@
 </section>
 <dialog id="dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="dialog-actions"><button id="dialog-cancel" hidden>取消</button><button id="dialog-ok">返回</button></div></dialog><div id="notice" class="notice" role="status" hidden></div>
 <dialog id="player-dialog" aria-labelledby="player-panel-title"><header class="player-panel-header"><h2 id="player-panel-title"></h2><button id="player-panel-close" aria-label="关闭面板">返回 ↵</button></header><div id="player-panel-body"></div></dialog><div id="achievement-toast" class="achievement-toast" role="status" hidden><span class="achievement-symbol">◇</span><div><small>已留下新的意义</small><strong id="achievement-toast-name"></strong></div></div>
-<script src="js/story-data.js?v=narrative-sunset-20261027"></script><script src="js/music-data.js?v=narrative-sunset-20261027"></script><script src="js/music.js?v=narrative-sunset-20261027"></script><script src="js/motion.js?v=narrative-sunset-20261027"></script><script src="js/shell.js?v=narrative-sunset-20261027"></script><script src="js/core.js?v=narrative-sunset-20261027"></script><script src="js/introduction.js?v=narrative-sunset-20261027"></script><script src="js/backgrounds.js?v=narrative-sunset-20261027"></script><script src="js/player.js?v=narrative-sunset-20261027"></script>
+<script src="js/story-data.js?v=monochrome-20261027"></script><script src="js/music-data.js?v=monochrome-20261027"></script><script src="js/music.js?v=monochrome-20261027"></script><script src="js/motion.js?v=monochrome-20261027"></script><script src="js/shell.js?v=monochrome-20261027"></script><script src="js/core.js?v=monochrome-20261027"></script><script src="js/introduction.js?v=monochrome-20261027"></script><script src="js/backgrounds.js?v=monochrome-20261027"></script><script src="js/player.js?v=monochrome-20261027"></script>
 </body></html>

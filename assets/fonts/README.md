@@ -8,9 +8,10 @@ GitHub Pages under that license.
 
 - `tomorrow-songti.woff2`: Regular (400), used for Chinese reading text. Contains
   the characters currently used by the project, plus printable ASCII.
-- `tomorrow-mincho-title.woff2`: Heavy (900), contains 始 and 终 for the two title
-  cards. Its heavy Mincho strokes and condensed styling evoke an EVA-like title
-  treatment; this is not an official EVA font or an original EVA asset.
+- `tomorrow-mincho-title.woff2`: Heavy (900), covers the project's current text
+  and printable ASCII. Used for the chapter headings, game controls, intertitles,
+  wordmark and title cards. Its heavy Mincho strokes and condensed title styling
+  evoke an EVA-like treatment; this is not an official EVA font or an original EVA asset.
 
 The subset derivatives have been renamed **Tomorrow Songti** and **Tomorrow
 Mincho Title**, including their internal family and PostScript names, to respect

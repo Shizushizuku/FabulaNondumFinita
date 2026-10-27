@@ -41,7 +41,13 @@ vm.createContext(context);
 for(const name of ['story-data','music-data','music','motion','shell','core','introduction','backgrounds','player'])vm.runInContext(fs.readFileSync('js/'+name+'.js','utf8'),context,{filename:name+'.js'});
 const el=id=>ids.get(id),saved=()=>JSON.parse(mem.get('tomorrow.player.v1')).autosave;
 function click(id){assert.equal(typeof el(id).onclick,'function',id);if(!el(id).disabled){if(options.audio){for(const {fn} of documentEvents.get('pointerdown')||[])fn({target:el(id)});}const event={target:el(id),prevented:false,preventDefault(){this.prevented=true},stopImmediatePropagation(){this.stopped=true},stopPropagation(){}};for(const {fn} of documentEvents.get('click')||[]){fn(event);if(event.stopped)break;}if(!event.prevented)el(id).onclick(event);}}
-function advance(){click('read-surface')}
+function advance(){
+ click('read-surface');
+ // Ordinary story tests wait for timed intertitles. Caption-specific tests use raw clicks and the clock.
+ if(!context.window.MeaningIntroduction.isPlaying())for(let steps=0;el('story').dataset.readingKind==='caption'&&el('player-dialog').open===false&&document.hidden===false;steps++){
+  assert(steps<100,'timed intertitle must finish');tickNext();
+ }
+}
 function start(){click('start');if(el('dialog').open)click('dialog-ok');if(options.autoCards!==false&&context.window.MeaningIntroduction.isPlaying()&&el('introduction').dataset.presentation==='card'&&el('introduction').dataset.phase!=='help')finishSequence();}
 function key(value,target=document.activeElement){
  const event={key:value,target,prevented:false,stopped:false,preventDefault(){this.prevented=true},stopImmediatePropagation(){this.stopped=true}};

@@ -6,7 +6,8 @@
 #story-background-next{opacity:0;transition:opacity .85s ease-in-out}#story-background-next.visible{opacity:1}
 .story-shade{z-index:-2;background:linear-gradient(180deg,#02020275,transparent 32%,#02020220 60%,#020202b8),radial-gradient(ellipse at center,transparent 25%,#02020266 100%)}
 .story-dust{z-index:-1;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.76' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' d='M0 0h160v160H0z' fill='white'/%3E%3C/svg%3E")}
-.story-heading{position:absolute;top:33px;left:4.8vw;right:4.8vw;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;pointer-events:none;color:#c4b9aa;text-shadow:0 2px 12px #000}
+/* Heading buttons sit above the reading surface; empty header space passes clicks through. */
+.story-heading{position:absolute;z-index:2;top:33px;left:4.8vw;right:4.8vw;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;pointer-events:none;color:#c4b9aa;text-shadow:0 2px 12px #000}
 .story-chapter{font-size:12px;letter-spacing:.22em;border-left:1px solid #ac9180;padding-left:14px;line-height:1.7}.story-chapter small{display:block;font-size:11px;letter-spacing:.1em;color:#b6aa9b;margin-top:9px}.story-brand{font-size:14px;letter-spacing:.45em;padding-top:2px;opacity:.75}
 #read-surface{position:absolute;inset:90px 0 68px;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
 .text-window{position:absolute;left:4.8vw;right:4.8vw;bottom:22px;min-height:235px;padding:24px 32px 44px;background:linear-gradient(110deg,#090807df,#090807be);border-top:1px solid #c9b8a24d;box-shadow:0 14px 80px #0005;cursor:pointer;transition:opacity .3s}
