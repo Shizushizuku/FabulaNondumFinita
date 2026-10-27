@@ -35,14 +35,31 @@ const dead=createEnv();dead.start();for(let i=0;dead.el('ending-screen').hidden;
 assert.equal(dead.saved().run.nodeId,'02');assert(!dead.el('story').classList.contains('bright-ending'));
 console.log('Conclusion passed: exact sixteen paragraphs after survival and a single finale transition, progressive daylight, light ending, timer pause, replay on later success and no playback after death.');
 
-// Normal-motion timing pauses on the expanding light seam before the first new paragraph.
+// Black, gradual brightening and a full-white hold all precede the first new paragraph.
 const animated=createEnv(false,{version:2,autosave:survived,slots:[null,null,null]},true);
-animated.click('continue-story');animated.advance();animated.advance();let thresholdDelay=null,reflectionEnd=null,finaleStart=null;const closingHolds=[];
+animated.click('continue-story');animated.advance();animated.advance();let reflectionEnd=null,finaleStart=null;const closingHolds=[],transitionStages=[];
 for(let i=0;animated.context.window.MeaningIntroduction.isPlaying();i++){
  assert(i<200);const [id,timer]=animated.timers.entries().next().value;
- if(animated.el('introduction').dataset.phase==='threshold'){thresholdDelay=timer.ms;reflectionEnd=animated.now();}
+ if(animated.el('introduction').dataset.phase==='threshold'){
+  if(reflectionEnd===null)reflectionEnd=animated.now();
+  transitionStages.push([animated.el('introduction').dataset.transition,timer.ms]);
+  assert.equal(animated.el('intro-copy').textContent,expected[11],'new text must wait until the white screen has finished');
+ }
  if(Number(animated.el('introduction').dataset.paragraph)===13&&finaleStart===null)finaleStart=animated.now();
  if(animated.el('introduction').dataset.phase==='hold'&&Number(animated.el('introduction').dataset.paragraph)>=14)closingHolds.push(timer.ms);
  animated.tickNext();
 }
-assert.equal(thresholdDelay,2160);assert.equal(reflectionEnd,60000,'first 12 paragraphs including fades and gaps');assert.equal(finaleStart,62160,'finale starts after the light transition');assert.equal(animated.now()-finaleStart,27400,'25-second finale plus a separate end card');assert.equal(animated.now(),89560);assert.equal(closingHolds.length,3);assert(closingHolds[0]<closingHolds[1]&&closingHolds[1]<closingHolds[2]);
+assert.deepEqual(transitionStages,[['black',160],['rise',1800],['white',200]]);
+assert.equal(reflectionEnd,60000,'first 12 paragraphs including fades and gaps');assert.equal(finaleStart,62160,'finale starts after the light transition');assert.equal(animated.now()-finaleStart,27400,'25-second finale plus a separate end card');assert.equal(animated.now(),89560);assert.equal(closingHolds.length,3);assert(closingHolds[0]<closingHolds[1]&&closingHolds[1]<closingHolds[2]);
+// Hiding the tab during either the blackout or the brightening preserves remaining time.
+const paused=createEnv(false);paused.context.window.MeaningIntroduction.playConclusion({});
+while(paused.el('introduction').dataset.phase!=='threshold')paused.tickNext();
+assert.equal(paused.el('introduction').dataset.transition,'black');paused.elapse(80);paused.visibility(true);paused.elapse(5000);
+assert.equal(paused.el('introduction').dataset.transition,'black');paused.visibility(false);paused.elapse(79);
+assert.equal(paused.el('introduction').dataset.transition,'black');paused.elapse(1);assert.equal(paused.el('introduction').dataset.transition,'rise');
+paused.elapse(900);paused.visibility(true);paused.elapse(5000);assert.equal(paused.el('introduction').dataset.transition,'rise');
+paused.visibility(false);paused.elapse(899);assert.equal(paused.el('introduction').dataset.transition,'rise');
+paused.elapse(1);assert.equal(paused.el('introduction').dataset.transition,'white');assert.equal(paused.el('introduction').dataset.paragraph,'12');
+paused.elapse(199);assert.equal(paused.el('introduction').dataset.paragraph,'12');paused.elapse(1);assert.equal(paused.el('introduction').dataset.paragraph,'13');
+assert.equal(paused.el('introduction').dataset.finalePart,'1');
+console.log('Finale transition passed: hard blackout, gradual brightening, full-white hold, original text timing and background-tab pause.');

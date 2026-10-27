@@ -21,6 +21,7 @@ const documentEvents=new Map();
 const document={activeElement:null,hidden:false,body:new Element('body'),getElementById:id=>ids.get(id),createElement:t=>new Element(t),createElementNS:(ns,t)=>new Element(t),querySelector:s=>s==='.read-footer'?footer:null,querySelectorAll:s=>s==='[data-home]'?homes:[],addEventListener(name,fn,capture){const list=documentEvents.get(name)||[];list.push({fn,capture:!!capture});documentEvents.set(name,list);}};
 const mem=new Map([['meaning.player.v2',JSON.stringify({version:2,autosave:{run:{nodeId:'obsolete'},pageIndex:0,log:[{text:'obsolete sentinel'}]}})]]);
 if(initialLibrary)mem.set('tomorrow.player.v1',JSON.stringify(initialLibrary));
+if(options.progress)mem.set('tomorrow.progress.v1',JSON.stringify(options.progress));
 if(introSeen)mem.set('tomorrow.introduction.v1','seen');
 if(options.helpSeen??introSeen)mem.set('tomorrow.help.v1','seen');
 class FakeAudio{

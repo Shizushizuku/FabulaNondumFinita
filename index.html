@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark">
 <title>留待明日 · 追寻生命的意义</title>
-<link rel="preload" href="assets/fonts/tomorrow-songti.woff2?v=monochrome-20261027" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2?v=monochrome-20261027" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=monochrome-20261027"><link rel="stylesheet" href="styles/fonts.css?v=monochrome-20261027">
-<link rel="stylesheet" href="styles/game-ui.css?v=dialogue-line-20261027">
+<link rel="preload" href="assets/fonts/tomorrow-songti.woff2?v=achievement-notice-20261027" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2?v=achievement-notice-20261027" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=finale-daybreak-20261027"><link rel="stylesheet" href="styles/fonts.css?v=achievement-notice-20261027">
+<link rel="stylesheet" href="styles/game-ui.css?v=node-notice-20261027">
 </head><body>
 <div class="scene" aria-hidden="true">
 <!-- Background: AI redrawing inspired by camp architecture; not a documentary photograph. -->
@@ -17,15 +17,15 @@
 <section id="home" class="cover reveal" aria-label="开始界面">
 <div class="vertical">追寻生命的意义</div>
 <p class="overline">在结局到来之前</p><h1>留待明日</h1><div class="hairline"></div>
-<nav class="menu" aria-label="主菜单"><button id="start">从押运车开始</button><button id="continue-story" hidden>继续</button><button id="chapters">按章节开始</button><button id="achievements">成就</button></nav>
+<nav class="menu" aria-label="主菜单"><button id="start">从头开始</button><button id="continue-story" hidden>继续</button><button id="chapters">流程图</button><button id="achievements">成就</button></nav>
 <button class="motion-button" id="motion" aria-pressed="false">暂停背景动态</button>
 </section>
 <section id="map" class="view" hidden aria-labelledby="map-title"><header class="view-head"><button class="back" data-home>← 返回开始</button><span class="brand">留待明日</span><button class="back" id="to-achievements">成就 →</button></header>
-<h2 class="heading" id="map-title" tabindex="-1">走过的路</h2><p class="sub" id="map-status"></p>
+<h2 class="heading" id="map-title" tabindex="-1">流程图</h2><p class="sub" id="map-status"></p>
 <div class="toolbar"><select id="chapter-select" aria-label="定位章节"></select><div class="legend"><span>未到达</span><span>已到达</span><span>意义</span></div><div class="tools"><button id="zoom-out" aria-label="缩小流程图">−</button><span id="zoom-label" style="font:11px monospace;width:35px">100%</span><button id="zoom-in" aria-label="放大流程图">＋</button><button id="fit">适应宽度</button></div></div>
 <div class="map-viewport" id="viewport" tabindex="0" aria-label="故事流程图，可横向和纵向滚动"><div class="map-space" id="map-space"><div class="map-inner" id="map-inner"></div></div></div>
 <div class="map-footer"><span>实线连接故事去向，虚线连接延迟影响与意义。</span><span id="node-count"></span></div></section>
-<section id="gallery" class="view" hidden aria-labelledby="gallery-title"><header class="view-head"><button class="back" data-home>← 返回开始</button><span class="brand">留待明日</span><button class="back" id="to-map">流程图 →</button></header><h2 class="heading" id="gallery-title" tabindex="-1">留下的意义</h2><p class="sub">一些时刻，在走过之后才有了名字。<br><span id="achievement-count"></span></p><div class="progress-track"><i id="achievement-progress"></i></div><div class="achievement-grid" id="cards"></div><p class="sub">这些记录没有分数，也不衡量一个人是否值得生还。</p></section>
+<section id="gallery" class="view" hidden aria-labelledby="gallery-title"><header class="view-head"><button class="back" data-home>← 返回开始</button><span class="brand">留待明日</span><button class="back" id="to-map">流程图 →</button></header><h2 class="heading" id="gallery-title" tabindex="-1">成就</h2><p class="sub">一些时刻，在走过之后才有了名字。<br><span id="achievement-count"></span></p><div class="progress-track"><i id="achievement-progress"></i></div><div class="achievement-grid" id="cards"></div><p class="sub">这些记录没有分数，也不衡量一个人是否值得生还。</p></section>
 
 <section id="story" hidden aria-label="故事正文">
   <div class="story-scenery" aria-hidden="true"><img id="story-background" src="assets/train.png" alt=""><img id="story-background-next" alt=""></div><div class="story-shade"></div><div class="story-dust"></div>
@@ -45,9 +45,9 @@
   <div class="intro-daylight" aria-hidden="true"></div>
   <div class="intro-stage"><p id="intro-copy" class="intro-copy" aria-live="polite" aria-atomic="true"></p></div>
   <div class="intro-blackout" aria-hidden="true"></div>
-  <div class="finale-effect" aria-hidden="true"><div class="finale-veil"></div><div class="finale-slit"></div></div>
+  <div class="finale-effect" aria-hidden="true"><div class="finale-brightness"></div></div>
 </section>
 <dialog id="dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="dialog-actions"><button id="dialog-cancel" hidden>取消</button><button id="dialog-ok">返回</button></div></dialog><div id="notice" class="notice" role="status" hidden></div>
 <dialog id="player-dialog" aria-labelledby="player-panel-title"><header class="player-panel-header"><h2 id="player-panel-title"></h2><button id="player-panel-close" aria-label="关闭面板">返回 ↵</button></header><div id="player-panel-body"></div></dialog><div id="achievement-toast" class="achievement-toast" role="status" hidden><span class="achievement-symbol">◇</span><div><small>已留下新的意义</small><strong id="achievement-toast-name"></strong></div></div>
-<script src="js/story-data.js?v=monochrome-20261027"></script><script src="js/music-data.js?v=monochrome-20261027"></script><script src="js/music.js?v=monochrome-20261027"></script><script src="js/motion.js?v=monochrome-20261027"></script><script src="js/shell.js?v=monochrome-20261027"></script><script src="js/core.js?v=monochrome-20261027"></script><script src="js/introduction.js?v=monochrome-20261027"></script><script src="js/backgrounds.js?v=monochrome-20261027"></script><script src="js/player.js?v=dialogue-line-20261027"></script>
+<script src="js/story-data.js?v=monochrome-20261027"></script><script src="js/music-data.js?v=monochrome-20261027"></script><script src="js/music.js?v=monochrome-20261027"></script><script src="js/motion.js?v=monochrome-20261027"></script><script src="js/shell.js?v=node-notice-20261027"></script><script src="js/core.js?v=monochrome-20261027"></script><script src="js/introduction.js?v=finale-daybreak-20261027"></script><script src="js/backgrounds.js?v=monochrome-20261027"></script><script src="js/player.js?v=node-notice-20261027"></script>
 </body></html>

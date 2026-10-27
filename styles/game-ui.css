@@ -1,6 +1,7 @@
 /* In-game type and controls: white ink, grey disabled actions, painted scenery. */
 :root{--font-eva:"Tomorrow Mincho Title","Songti SC","STSong",serif;font-family:var(--font-story)}
 #home{font-family:var(--font-story)}
+#home .menu{max-width:100%}
 #home h1{font-family:var(--font-eva);font-weight:900;font-synthesis:none;transform:scaleX(.87);letter-spacing:.18em}
 
 #story,#player-dialog{color:#fff;--paper:#fff;--rose:#fff}
@@ -20,10 +21,11 @@
 .intro-recall.is-leaving{pointer-events:none}
 .intro-recall:hover,.intro-recall:focus-visible{text-decoration:underline;text-underline-offset:5px}
 
-#story{--reader-left:calc(4.8vw + 32px);--reader-right:calc(4.8vw + 32px);--dialogue-height:325px;--dialogue-floor:90px}
+#story{--reader-left:calc(4.8vw + 32px);--reader-right:calc(4.8vw + 32px);--dialogue-height:325px;--dialogue-floor:90px;--speaker-size:calc(var(--reader-size) + 2px)}
 #read-surface{bottom:0}
-.text-window{left:0;right:0;bottom:0;height:var(--dialogue-height);min-height:0;max-height:calc(100% - 44px);padding:24px var(--reader-right) var(--dialogue-floor) var(--reader-left);border:0;border-top:1px solid #c4c4c466;border-radius:0;background:none;box-shadow:none;overflow:visible}
+.text-window{left:0;right:0;bottom:0;height:var(--dialogue-height);min-height:0;max-height:calc(100% - 44px);padding:24px var(--reader-right) var(--dialogue-floor) var(--reader-left);border:0;border-top:1px solid #c4c4c466;border-radius:0;background:#0003;box-shadow:none;overflow:visible}
 .reader-label{position:absolute;left:var(--reader-left);right:var(--reader-right);bottom:calc(100% + 12px);margin:0;letter-spacing:.08em;line-height:1.5}
+.reader-label #reader-name{font-size:var(--speaker-size);line-height:1.2}
 .story-copy{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#777 transparent}
 .reader-hint{left:var(--reader-left);bottom:calc(var(--dialogue-floor) - 30px)}
 .continue-mark{right:var(--reader-right);bottom:calc(var(--dialogue-floor) - 30px)}
@@ -71,7 +73,7 @@ body:has(#story:not([hidden])) .music-toggle:focus-visible{outline-color:#fff}
   #story{--reader-left:calc((100vw - 1360px)/2 + 39px);--reader-right:calc((100vw - 1360px)/2 + 39px);--dialogue-height:340px}
 }
 @media(max-width:700px){
-  #story{--reader-left:calc(max(15px,env(safe-area-inset-left)) + 21px);--reader-right:calc(max(15px,env(safe-area-inset-right)) + 21px);--dialogue-height:calc(340px + env(safe-area-inset-bottom));--dialogue-floor:calc(100px + env(safe-area-inset-bottom))}
+  #story{--reader-left:calc(max(15px,env(safe-area-inset-left)) + 21px);--reader-right:calc(max(15px,env(safe-area-inset-right)) + 21px);--dialogue-height:calc(340px + env(safe-area-inset-bottom));--dialogue-floor:calc(100px + env(safe-area-inset-bottom));--speaker-size:calc(var(--reader-size) - 1px)}
   .story-heading{left:max(20px,env(safe-area-inset-left));right:max(20px,env(safe-area-inset-right));gap:12px}
   .story-chapter{font-size:25px;max-width:57%}
   .story-chapter small{font-size:16px;margin-top:9px}
@@ -82,7 +84,7 @@ body:has(#story:not([hidden])) .music-toggle:focus-visible{outline-color:#fff}
   .story-choice{font-size:16px;padding:19px 20px}
 }
 @media(max-height:550px){
-  #story{--dialogue-height:calc(237px + env(safe-area-inset-bottom));--dialogue-floor:calc(72px + env(safe-area-inset-bottom))}
+  #story{--dialogue-height:calc(237px + env(safe-area-inset-bottom));--dialogue-floor:calc(72px + env(safe-area-inset-bottom));--speaker-size:20px}
   .story-heading{top:max(12px,env(safe-area-inset-top))}
   .story-chapter{font-size:22px}
   .story-chapter small{display:block;font-size:14px;margin-top:5px}

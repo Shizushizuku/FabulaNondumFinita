@@ -123,7 +123,7 @@
   }
   function startNew(){launchWithIntroduction(beginNewRun,true);}
   function restore(save){if(!validSave(save)){toast('这份存档无法读取。');return;}halt();launchWithIntroduction(()=>motion.cover(()=>restoreSave(save)));}
-  shell.onStart(({nodeId,newRun,state})=>{if(newRun){startNew();return;}if(!validRun(state)){toast('这个节点缺少完整记录，请从押运车开始。');return;}
+  shell.onStart(({nodeId,newRun,state})=>{if(newRun){startNew();return;}if(!validRun(state)){toast('这个节点缺少完整记录，请点击「从头开始」重新游玩。');return;}
     launchWithIntroduction(()=>{setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});});
   function render(){halt();captionState=null;choiceOpen=false;setModal(false);el('choice-screen').hidden=true;el('ending-screen').hidden=true;el('story').classList.remove('bright-ending','caption-paused');el('theory-note').hidden=true;
     const scene=S.nodes[run.nodeId],page=pageList[pageIndex];if(!page)throw Error('Empty story page '+run.nodeId);
@@ -194,7 +194,7 @@
     el('retry-choice').hidden=!dead;const target=dead?retryPoint():null;el('retry-choice').textContent=target?'从上一个选择开始 · '+S.nodes[target.point.nodeId].title:'从头重新开始';syncControls();el('reread-story').hidden=dead;el('ending-home').focus();autosave();}
   function leave(ended=false){active=false;panelMode='';music.duck(false);autosave();halt();setMode();syncControls();el('choice-screen').hidden=true;el('ending-screen').hidden=true;shell.showHome();
     if(ended){const p=shell.getProgress(),a=Math.max(0,p.achievements.length-(run.initialAchievements||0)),n=Math.max(0,p.visited.length-(run.initialNodes||0));
-      openDialog('这一遍，留下了痕迹',`「按章节开始」已可回看本轮到达的节点。新增 ${n} 个节点、${a} 项成就。已到达的节点会保留当时的选择，成就可在开始界面查看。`);}}
+      openDialog('这一遍，留下了痕迹',`「流程图」已可回看本轮到达的节点。新增 ${n} 个节点、${a} 项成就。已到达的节点会保留当时的选择，成就可在开始界面查看。`);}}
   function applySettings(){el('story').style.setProperty('--reader-size',library.settings.font+'px');el('story').style.setProperty('--reader-leading',library.settings.lineHeight);}
   function panelButton(label,action,className=''){const b=document.createElement('button');b.textContent=label;b.className='panel-button '+className;b.onclick=action;return b;}
   function resumeReading(){

@@ -4,7 +4,7 @@
   const KEY='tomorrow.introduction.v1',HELP_KEY='tomorrow.help.v1',story=window.MeaningStory;
   const helpPages=[
     {title:'按自己的节奏阅读',text:'右下角可以开启自动播放或快进。\n在「暂停 → 阅读设置」里，可调整字号、行距和播放速度。'},
-    {title:'随时停下，也能接着走',text:'阅读时可以随时暂停、保存进度。\n之后从主页「继续」恢复，或在「按章节开始」中回到已走过的节点。\n进度保存在当前浏览器。'},
+    {title:'随时停下，也能接着走',text:'阅读时可以随时暂停、保存进度。\n之后从主页「继续」恢复，或在「流程图」中回到已解锁的节点。\n选择「从头开始」可重新游玩，已解锁的节点和成就仍会保留。\n进度保存在当前浏览器。'},
     {title:'失败后，再试一次',text:'如果选错或未能生还，点击「从上一个选择开始」重新尝试。\n会回到影响这次结局的关键选择，之后的选择可以重做。'},
     {title:'愿你有所收获',text:'预计游玩约十分钟，选择不会被评分。\n故事并不难，请尽量尝试抵达最终结局。\n感谢游玩，愿这段经历为你留下一点思考。'}
   ];
@@ -12,7 +12,7 @@
   let paragraphs=story.introduction,mode='introduction';
   const layer=document.getElementById('introduction'),text=document.getElementById('intro-copy'),main=document.getElementById('game-main');
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const finaleTransition=reduced?360:2160;
+  const finaleTransition=reduced?{black:60,rise:240,white:60}:{black:160,rise:1800,white:200};
   let timeline=[],closing=null;
   function fitDuration(parts,budget){
     const fields=parts.flatMap(part=>Object.keys(part).map(key=>({part,key,weight:part[key]})));
@@ -41,6 +41,14 @@
   function arm(){if(!playing||document.hidden)return;started=Date.now();timer=setTimeout(()=>{timer=0;const callback=next;next=null;callback();},remaining);}
   function wait(ms,callback){clearTimeout(timer);remaining=ms;next=callback;arm();}
   function phase(value){layer.dataset.phase=value;}
+  function enterFinale(){
+    layer.dataset.transition='black';phase('threshold');
+    wait(finaleTransition.black,()=>{
+      layer.dataset.transition='rise';wait(finaleTransition.rise,()=>{
+        layer.dataset.transition='white';wait(finaleTransition.white,paragraph);
+      });
+    });
+  }
   function paragraph(){
     const timing=timeline[index];
     layer.style.setProperty('--intro-in',timing.fadeIn+'ms');layer.style.setProperty('--intro-out',timing.fadeOut+'ms');layer.style.setProperty('--finale-in',timing.fadeIn+'ms');
@@ -62,7 +70,7 @@
     text.textContent=paragraphs[index];layer.dataset.paragraph=String(index+1);phase('fade-in');
     wait(timing.fadeIn,()=>{phase('hold');wait(timing.hold,()=>{
       phase('fade-out');wait(timing.fadeOut,()=>{index++;if(index<paragraphs.length){
-        if(mode==='conclusion'&&index===story.conclusionFinaleAt)wait(timing.gap,()=>{phase('threshold');wait(finaleTransition,paragraph);});
+        if(mode==='conclusion'&&index===story.conclusionFinaleAt)wait(timing.gap,enterFinale);
         else wait(timing.gap,paragraph);
       }else finish();});
     });});
@@ -109,7 +117,7 @@
     if(playing)return;playing=true;mode=type;paragraphs=type==='conclusion'?story.conclusion:story.introduction;callbacks=handlers;index=0;previousInert=main.inert;
     main.inert=true;layer.classList.toggle('conclusion',mode==='conclusion');layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');layer.style.setProperty('--daylight','0');document.body.classList.add('intro-playing');layer.hidden=false;layer.classList.remove('is-paused');
     prepareTimeline();if(callbacks.skipOpening)closing={cover:reduced?1:180,gap:0,reveal:reduced?1:420};
-    layer.style.setProperty('--finale-transition',finaleTransition+'ms');
+    layer.dataset.transition='';layer.style.setProperty('--finale-rise',finaleTransition.rise+'ms');
     layer.style.setProperty('--intro-black',closing.cover+'ms');layer.style.setProperty('--intro-reveal',closing.reveal+'ms');
     layer.dataset.presentation=callbacks.skipOpening?'card':'sequence';
     if(callbacks.help&&!helpSeen){helpIndex=0;renderHelp();}else beginPresentation();
