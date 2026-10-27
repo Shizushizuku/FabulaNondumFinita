@@ -17,12 +17,11 @@ el('player-panel-body').children.find(b=>b.textContent==='阅读设置').onclick
 const input=el('player-panel-body').children.flatMap(n=>n.children).find(n=>n.attributes['aria-label']==='自动翻页速度');assert(input);
 const spacing=el('player-panel-body').children.flatMap(n=>n.children).find(n=>n.attributes['aria-label']==='正文行距');assert(spacing);spacing.value='2.2';spacing.oninput();assert.equal(el('story').style['--reader-leading'],2.2);
 input.value='5';input.oninput();assert.equal(JSON.parse(mem.get('tomorrow.player.v1')).settings.autoRate,5);click('player-panel-close');assert.equal(saved().pageKey,paused);
-click('auto-read');const text=el('story-copy').textContent;assert([...timers.values()].some(t=>t.ms===Math.max(800,Array.from(text).length*30)),'fast setting controls dwell time');
+click('auto-read');const text=el('story-copy').textContent;assert([...timers.values()].some(t=>t.ms===Math.round(1600*Math.max(1,Math.min(1.5,Array.from(text).length/100)))),'fast setting controls dwell time');
 click('auto-read');assert.equal(el('auto-read').attributes['aria-pressed'],false);
-// With auto off, a dialogue sentence waits; fast-forward still cannot cross it.
+// With auto off, dialogue waits. Fast-forward must now cross it and stop at the next choice.
 for(let i=0;i<20&&el('story').dataset.readingKind!=='dialogue';i++)advance();
-assert.equal(el('story').dataset.readingKind,'dialogue');const speech=saved().pageKey;click('skip-read');drain();assert.equal(saved().pageKey,speech);
-assert(!el('auto-read').disabled,'dialogue auto now has a working action');
+assert.equal(el('story').dataset.readingKind,'dialogue');const speech=saved().pageKey;click('skip-read');drain();assert.notEqual(saved().pageKey,speech);assert.equal(saved().run.nodeId,'04');assert(!el('choice-screen').hidden);assert.equal(el('skip-read').attributes['aria-pressed'],false);
 console.log('Controls passed: no default answer, Space/background blocked, explicit choices, auto across speech/captions until choice, disabled states and adjustable persistent speed.');
 // Exercise real typewriter timers as well as instant text used above.
 {

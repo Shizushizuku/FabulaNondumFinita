@@ -5,11 +5,12 @@
 <title>留待明日 · 追寻生命的意义</title>
 <link rel="preload" href="assets/fonts/tomorrow-songti.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=bookends-20261027"><link rel="stylesheet" href="styles/fonts.css?v=local-fonts-20261027">
+<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=playback-motion-20261027"><link rel="stylesheet" href="styles/fonts.css?v=local-fonts-20261027">
 </head><body>
 <div class="scene" aria-hidden="true">
 <!-- Background: AI redrawing inspired by camp architecture; not a documentary photograph. -->
 <img class="painted-background" alt="" src="assets/camp-cover.png"><div class="ambient-haze"></div></div><div class="grain" aria-hidden="true"></div>
+<div id="scene-curtain" class="scene-curtain" aria-hidden="true" hidden></div>
 <main id="game-main">
 <section id="home" class="cover reveal" aria-label="开始界面">
 <div class="edition">一份尚未合上的记录</div><div class="vertical">追寻生命的意义</div>
@@ -27,7 +28,7 @@
 
 <section id="story" hidden aria-label="故事正文">
   <div class="story-scenery" aria-hidden="true"><img id="story-background" src="assets/train.png" alt=""><img id="story-background-next" alt=""></div><div class="story-shade"></div><div class="story-dust"></div>
-  <header class="story-heading"><div class="story-chapter"><span id="chapter-caption"></span><small id="scene-caption"></small></div><div class="story-heading-actions"><span class="story-brand">留待明日</span><button id="intro-recall" class="intro-recall" hidden>开场白已跳过，点击此处回顾</button></div></header>
+  <header class="story-heading"><div class="story-chapter"><span id="chapter-caption"></span><small id="scene-caption"></small></div><div class="story-heading-actions"><button id="retry-background" class="retry-background" hidden>背景未加载，点击重试</button><span class="story-brand">留待明日</span><button id="intro-recall" class="intro-recall" hidden>开场白已跳过，点击此处回顾</button></div></header>
   <div id="read-surface" tabindex="0" role="button" aria-label="继续阅读，空格或 Enter 继续">
     <div class="bulletin-sheet" id="bulletin-sheet" hidden><p class="bulletin-copy" id="bulletin-copy"></p><div class="bulletin-continue" id="bulletin-continue" hidden>点击，继续　↵</div></div>
     <div class="text-window" id="text-window"><div class="reader-label"><span id="reader-name">维克多·弗兰克尔</span><span id="page-number"></span></div><p class="story-copy" id="story-copy"></p><span class="reader-hint" id="reader-hint"></span><span class="continue-mark" id="continue-mark" hidden>↵</span><span class="next-page" id="next-page" aria-hidden="true">›</span></div>
@@ -47,5 +48,5 @@
 </section>
 <dialog id="dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="dialog-actions"><button id="dialog-cancel" hidden>取消</button><button id="dialog-ok">返回</button></div></dialog><div id="notice" class="notice" role="status" hidden></div>
 <dialog id="player-dialog" aria-labelledby="player-panel-title"><header class="player-panel-header"><h2 id="player-panel-title"></h2><button id="player-panel-close" aria-label="关闭面板">返回 ↵</button></header><div id="player-panel-body"></div></dialog><div id="achievement-toast" class="achievement-toast" role="status" hidden><span class="achievement-symbol">◇</span><div><small>已留下新的意义</small><strong id="achievement-toast-name"></strong></div></div>
-<script src="js/story-data.js?v=bookends-20261027"></script><script src="js/shell.js?v=bookends-20261027"></script><script src="js/core.js?v=bookends-20261027"></script><script src="js/introduction.js?v=bookends-20261027"></script><script src="js/player.js?v=bookends-20261027"></script>
+<script src="js/story-data.js?v=playback-motion-20261027"></script><script src="js/motion.js?v=playback-motion-20261027"></script><script src="js/shell.js?v=playback-motion-20261027"></script><script src="js/core.js?v=playback-motion-20261027"></script><script src="js/introduction.js?v=playback-motion-20261027"></script><script src="js/backgrounds.js?v=playback-motion-20261027"></script><script src="js/player.js?v=playback-motion-20261027"></script>
 </body></html>

@@ -122,3 +122,18 @@ body.intro-playing{overflow:hidden}
 .introduction[data-phase=card-out] .sequence-title{animation:intro-out var(--card-out) ease-in both}
 .story-copy{line-height:var(--reader-leading,1.95)!important}
 @media(max-height:500px){.help-panel{max-height:calc(100dvh - 30px)}.help-panel h2{margin:10px 0 14px;font-size:24px}.help-panel p{font-size:15px;line-height:1.8;margin-bottom:20px}}
+
+/* View transitions, dialogs and small control feedback. */
+.scene-curtain{position:fixed;inset:0;z-index:80;background:#030303;pointer-events:auto}
+.retry-background{pointer-events:auto;color:#d4b095;font-size:10px;padding:6px 0;line-height:1.5}
+#player-dialog[open],#dialog[open]{animation:modal-arrive .23s ease-out}
+#player-dialog[open]::backdrop,#dialog[open]::backdrop{animation:veil-arrive .23s ease-out}
+#player-dialog.motion-closing::backdrop,#dialog.motion-closing::backdrop{animation:veil-depart .15s ease-in both}
+.story-choice,.panel-button,.ending-actions button,.back,.tools button,.read-tools button,.help-actions button{transition:background-color .18s,border-color .18s,color .18s,box-shadow .18s}
+.story-choice:active,.panel-button:active,.menu button:active{filter:brightness(1.16)}
+.read-tools button[aria-pressed=true]{border-bottom:1px solid #b89078;box-shadow:0 8px 14px -12px #e4bc97}
+#story-background-next{transition:none}
+@keyframes modal-arrive{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+@keyframes veil-arrive{from{opacity:0}to{opacity:1}}
+@keyframes veil-depart{from{opacity:1}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.scene-curtain{display:none}.story-choice,.panel-button,.ending-actions button,.back,.tools button,.read-tools button,.help-actions button{transition:none}}

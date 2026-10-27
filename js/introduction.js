@@ -97,7 +97,7 @@
     document.getElementById('help-count').textContent=(helpIndex+1)+' / '+helpPages.length;
     document.getElementById('help-prev').hidden=helpIndex===0;
     document.getElementById('help-next').textContent=helpIndex===helpPages.length-1?'准备好了，开始':'下一页 →';
-    document.getElementById('help-next').focus({preventScroll:true});
+    window.MeaningMotion.enter(document.querySelector('.help-panel'));document.getElementById('help-next').focus({preventScroll:true});
   }
   document.getElementById('help-prev').onclick=()=>{if(playing&&layer.dataset.phase==='help'&&helpIndex>0){helpIndex--;renderHelp();}};
   document.getElementById('help-next').onclick=()=>{
