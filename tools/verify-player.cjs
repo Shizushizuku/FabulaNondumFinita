@@ -12,14 +12,14 @@ for(let steps=0;steps<2000;steps++){
   advance();assert.notEqual(saved().pageKey,exactKey);click('load-read');el('player-panel-body').children.filter(x=>x.className.includes('save-slot'))[1].onclick();assert.equal(saved().pageKey,exactKey);manual=true;
  }
  if(context.window.MeaningIntroduction.isPlaying())t.finishSequence();
- if(!el('ending-screen').hidden)break;
+ if(!el('ending-screen').hidden||!el('home').hidden)break;
  if(!el('choice-screen').hidden)el('choice-buttons').children[choices[id]??0].onclick();else advance();
 }
-assert.equal(saved().run.nodeId,'22');assert.equal(el('ending-title').textContent,'留待明日');assert.equal(el('ending-copy').textContent,'全文完。');assert(el('story').classList.contains('bright-ending'));
+assert.equal(saved().run.nodeId,'22');assert(!el('home').hidden);assert(el('story').hidden);assert.equal(el('sequence-title').textContent,'终');assert(!el('dialog').open);
 assert(path.includes('20B'));assert(path.includes('21A'));assert(!path.includes('21B'));assert(!path.includes('21'),'routing-only node must not show an empty page');
 const p=context.window.MeaningShell.getProgress();assert(p.visited.includes('21'));assert(p.achievements.includes('N10'));assert.equal(p.snapshots['16'].flags.shared,undefined);
 assert.equal(p.snapshots['16'].flags.record,'letter');
-click('ending-home');assert(!el('home').hidden);click('dialog-ok');
+assert(!el('home').hidden);
 click('continue-story');click('load-read');el('player-panel-body').children.filter(x=>x.className.includes('save-slot'))[1].onclick();
 assert.equal(saved().run.nodeId,'16');assert.equal(saved().run.flags.shared,undefined);assert.equal(saved().pageKey,exactKey);
 click('pause-read');el('player-panel-body').children.find(b=>b.textContent==='回到开始界面').onclick();click('chapters');
@@ -28,7 +28,7 @@ let deathPages=0;
 for(let steps=0;steps<100;steps++){
  if(saved().run.nodeId==='02'&&el('ending-screen').hidden)deathPages++;
  if(context.window.MeaningIntroduction.isPlaying())t.finishSequence();
- if(!el('ending-screen').hidden)break;
+ if(!el('ending-screen').hidden||!el('home').hidden)break;
  if(!el('choice-screen').hidden)el('choice-buttons').children[0].onclick();else advance();
 }
 assert(deathPages>=6,'death narrative must precede ending');assert.equal(el('ending-title').textContent,'死亡');assert.equal(el('ending-copy').textContent,'本次故事结束。');

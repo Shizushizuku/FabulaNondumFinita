@@ -107,3 +107,18 @@ body.intro-playing{overflow:hidden}
 @keyframes finale-words{from{opacity:0;filter:blur(7px);transform:translateY(8px) scale(1.025)}to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.finale-slit{display:none}.finale-veil{background:#fff9ed;animation:finale-soften var(--finale-transition) ease-in-out both}.introduction[data-entrance=true][data-phase=fade-in] .intro-copy{animation:intro-in var(--finale-in) ease-out both}}
 @keyframes finale-soften{0%,100%{opacity:0}50%{opacity:1}}
+
+/* Manual help pages and the two single-character bookends. */
+.help-panel{display:none;position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:min(680px,calc(100% - 52px));max-height:calc(100dvh - 64px);overflow-y:auto;padding:12px 5px;color:#ded4c5}
+.introduction[data-phase=help] .help-panel{display:block}
+.help-panel small{font:12px monospace;letter-spacing:.3em;color:#b7a48b}.help-panel h2{font-size:clamp(25px,4vw,38px);font-weight:400;letter-spacing:.12em;line-height:1.6;margin:24px 0 28px}
+.help-panel p{white-space:pre-line;font-size:clamp(16px,2vw,20px);line-height:2.1;letter-spacing:.04em;border-left:2px solid #b9987c;padding-left:22px;margin:0 0 36px}
+.help-actions{display:flex;justify-content:space-between;gap:20px}.help-actions button{padding:12px 20px;min-height:44px;font-size:14px;letter-spacing:.1em;border:1px solid #88705b;color:#e7d8c3}.help-actions button:last-child{margin-left:auto;background:#2a2119}.help-actions button:hover{background:#3b2d21}
+.sequence-title{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;color:inherit;font-size:clamp(70px,14vw,130px);font-weight:400;letter-spacing:.2em;padding-left:.2em;text-shadow:0 0 35px #bba38025}
+.introduction[data-phase^="card-"] .sequence-title{display:flex}
+.introduction:not(.conclusion)[data-phase^="card-"]{background:#050505}
+.introduction.conclusion .sequence-title{color:#29251f;text-shadow:none}
+.introduction[data-phase=card-in] .sequence-title{animation:intro-in var(--card-in) ease-out both}
+.introduction[data-phase=card-out] .sequence-title{animation:intro-out var(--card-out) ease-in both}
+.story-copy{line-height:var(--reader-leading,1.95)!important}
+@media(max-height:500px){.help-panel{max-height:calc(100dvh - 30px)}.help-panel h2{margin:10px 0 14px;font-size:24px}.help-panel p{font-size:15px;line-height:1.8;margin-bottom:20px}}

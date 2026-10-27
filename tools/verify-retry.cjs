@@ -4,8 +4,8 @@ for(const [death,cause,overrides,alternative] of [
  ['02','01',{'01':0},1],['08B','04',{'04':1},0],['12B','09',{'09':1},0],['14A','13',{'11':0,'13':0},1],['19A','19',{'19':0},1]
 ]){
  const {el,saved,click,advance,start,mem,context,finishSequence}=createEnv();start();const plan={...base,...overrides};
- function runToEnd(){for(let i=0;i<3000;i++){if(context.window.MeaningIntroduction.isPlaying())finishSequence();if(!el('ending-screen').hidden)return;if(!el('choice-screen').hidden)el('choice-buttons').children[plan[saved().run.nodeId]??0].onclick();else advance();}throw Error('no ending');}
- runToEnd();assert.equal(saved().run.nodeId,death);assert(el('retry-choice').textContent.includes('回到关键选择'));assert(el('auto-read').disabled);
+ function runToEnd(){for(let i=0;i<3000;i++){if(context.window.MeaningIntroduction.isPlaying())finishSequence();if(!el('ending-screen').hidden||!el('home').hidden)return;if(!el('choice-screen').hidden)el('choice-buttons').children[plan[saved().run.nodeId]??0].onclick();else advance();}throw Error('no ending');}
+ runToEnd();assert.equal(saved().run.nodeId,death);assert(el('retry-choice').textContent.includes('从上一个选择开始'));assert(el('auto-read').disabled);
  const before=saved().run.choices.find(p=>p.nodeId===cause);click('retry-choice');assert.equal(saved().run.nodeId,cause);assert(!el('choice-screen').hidden);
  assert.deepEqual(saved().run.flags,before.flags,'restore causal flags');assert(!saved().run.choices.some(p=>p.nodeId===cause),'discard the failed choice and later state');
  const buttons=el('choice-buttons').children;assert.equal(buttons.filter(b=>b.children.some(n=>n.className==='previous-choice')).length,1);

@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark">
 <title>留待明日 · 追寻生命的意义</title>
-<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=finale-20261027">
+<link rel="preload" href="assets/fonts/tomorrow-songti.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tomorrow-mincho-title.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles/shell.css"><link rel="stylesheet" href="styles/player.css?v=bookends-20261027"><link rel="stylesheet" href="styles/fonts.css?v=local-fonts-20261027">
 </head><body>
 <div class="scene" aria-hidden="true">
 <!-- Background: AI redrawing inspired by camp architecture; not a documentary photograph. -->
@@ -12,7 +14,7 @@
 <section id="home" class="cover reveal" aria-label="开始界面">
 <div class="edition">一份尚未合上的记录</div><div class="vertical">追寻生命的意义</div>
 <p class="overline">在结局到来之前</p><h1>留待明日</h1><div class="hairline"></div>
-<nav class="menu" aria-label="主菜单"><button id="start">从押运车开始</button><button id="continue-story" hidden>继续上次阅读</button><button id="chapters">从选择的章节开始</button><button id="achievements">成就</button></nav>
+<nav class="menu" aria-label="主菜单"><button id="start">从押运车开始</button><button id="continue-story" hidden>继续</button><button id="chapters">按章节开始</button><button id="achievements">成就</button></nav>
 <button class="motion-button" id="motion" aria-pressed="false">暂停背景动态</button>
 <div class="colophon">以维克多·弗兰克尔的经历为原型<span>对白、配角与分支经过文学改编 · 死亡路线属于假设分支</span></div>
 </section>
@@ -32,10 +34,12 @@
   </div>
   <footer class="read-footer"><button class="theory-note" id="theory-note" hidden></button><div></div><nav class="read-tools" aria-label="阅读控制"><button id="log-read">回看</button><button id="auto-read" aria-pressed="false">自动</button><button id="skip-read" aria-pressed="false">快进</button><button id="save-read">保存</button><button id="load-read">读取</button><button id="pause-read">暂停</button></nav></footer>
   <div id="choice-screen" class="story-modal" role="dialog" aria-modal="true" aria-labelledby="choice-question" hidden><div class="choice-content"><p class="choice-overline">此刻，我决定</p><h2 class="choice-question" id="choice-question" tabindex="-1"></h2><div class="choice-buttons" id="choice-buttons"></div><p class="choice-footnote">按 1 / 2，或点击选择</p></div></div>
-  <div id="ending-screen" class="story-modal" role="dialog" aria-modal="true" aria-labelledby="ending-title" hidden><div class="ending-content"><p class="ending-kicker" id="ending-kicker"></p><h2 class="ending-title" id="ending-title"></h2><p class="ending-copy" id="ending-copy"></p><div class="ending-actions"><button id="retry-choice">回到上一个选择</button><button id="reread-story">再读一遍</button><button id="ending-home">合上 · 回到开始界面</button></div></div></div>
+  <div id="ending-screen" class="story-modal" role="dialog" aria-modal="true" aria-labelledby="ending-title" hidden><div class="ending-content"><p class="ending-kicker" id="ending-kicker"></p><h2 class="ending-title" id="ending-title"></h2><p class="ending-copy" id="ending-copy"></p><div class="ending-actions"><button id="retry-choice">从上一个选择开始</button><button id="reread-story">再读一遍</button><button id="ending-home">合上 · 回到开始界面</button></div></div></div>
 </section>
 </main>
 <section id="introduction" class="introduction" role="dialog" aria-modal="true" aria-label="开场白" tabindex="-1" hidden>
+  <div class="help-panel"><small id="help-count"></small><h2 id="help-title"></h2><p id="help-copy"></p><div class="help-actions"><button id="help-prev">← 上一页</button><button id="help-next">下一页 →</button></div></div>
+  <div id="sequence-title" class="sequence-title" aria-live="polite"></div>
   <div class="intro-daylight" aria-hidden="true"></div>
   <div class="intro-stage"><p id="intro-copy" class="intro-copy" aria-live="polite" aria-atomic="true"></p></div>
   <div class="intro-blackout" aria-hidden="true"></div>
@@ -43,5 +47,5 @@
 </section>
 <dialog id="dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-copy"></p><div class="dialog-actions"><button id="dialog-cancel" hidden>取消</button><button id="dialog-ok">返回</button></div></dialog><div id="notice" class="notice" role="status" hidden></div>
 <dialog id="player-dialog" aria-labelledby="player-panel-title"><header class="player-panel-header"><h2 id="player-panel-title"></h2><button id="player-panel-close" aria-label="关闭面板">返回 ↵</button></header><div id="player-panel-body"></div></dialog><div id="achievement-toast" class="achievement-toast" role="status" hidden><span class="achievement-symbol">◇</span><div><small>已留下新的意义</small><strong id="achievement-toast-name"></strong></div></div>
-<script src="js/story-data.js?v=finale-20261027"></script><script src="js/shell.js?v=finale-20261027"></script><script src="js/core.js?v=finale-20261027"></script><script src="js/introduction.js?v=finale-20261027"></script><script src="js/player.js?v=finale-20261027"></script>
+<script src="js/story-data.js?v=bookends-20261027"></script><script src="js/shell.js?v=bookends-20261027"></script><script src="js/core.js?v=bookends-20261027"></script><script src="js/introduction.js?v=bookends-20261027"></script><script src="js/player.js?v=bookends-20261027"></script>
 </body></html>

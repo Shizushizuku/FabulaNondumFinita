@@ -3,7 +3,7 @@
   const C=window.MeaningCore, S=window.MeaningStory, shell=window.MeaningShell, introduction=window.MeaningIntroduction;
   const el=id=>document.getElementById(id), copy=C.clone;
   const STORAGE='tomorrow.player.v1';
-  let library={version:2,autosave:null,slots:[null,null,null],lastChoices:{},settings:{speed:34,font:22,autoRate:3}}, storageFailed=false;
+  let library={version:2,autosave:null,slots:[null,null,null],lastChoices:{},settings:{speed:34,font:22,autoRate:3,lineHeight:1.95}}, storageFailed=false;
   try { const raw=JSON.parse(localStorage.getItem(STORAGE)); if(raw?.version===2) library={...library,...raw,settings:{...library.settings,...raw.settings}}; } catch { storageFailed=true; }
   let run=null, pageIndex=0, pageList=[], log=[], typing=false, visible=0, chars=[], textTimer=0, advanceTimer=0;
   let auto=false, skip=false, active=false, displayToken=0, choiceOpen=false, pageLogged=false, panelMode='', resumeType=null;
@@ -16,6 +16,7 @@
   library.settings.speed=Math.max(0,Math.min(65,Number(library.settings.speed)||0));
   library.settings.font=Math.max(18,Math.min(28,Number(library.settings.font)||22));
   library.settings.autoRate=Math.max(1,Math.min(5,Number(library.settings.autoRate)||3));
+  library.settings.lineHeight=Math.max(1.6,Math.min(2.6,Number(library.settings.lineHeight)||1.95));
   if(!library.lastChoices||typeof library.lastChoices!=='object'||Array.isArray(library.lastChoices))library.lastChoices={};
   function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(library));return true;}catch{if(!storageFailed){toast('浏览器未能保存，当前进度仍可继续阅读。');storageFailed=true;}return false;}}
   function snapshot(){return {savedAt:new Date().toISOString(),readingVersion:S.readingVersion,pageKey:pageList[pageIndex]?.key,run:copy(run),pageIndex,awaitingChoice:choiceOpen,log:copy(log.slice(-400))};}
@@ -59,10 +60,10 @@
     pageLogged=!!log.some(l=>l.key===run.nodeId+'|'+pageList[pageIndex].key);
     shell.visit(run.nodeId,copy(run));setMode();showPlayer();render();if(save.awaitingChoice){completeText();showChoices(C.options(run.nodeId,run.flags,S.nodes));}else el('read-surface').focus({preventScroll:true});
     if(updated)toast('文字分页已更新，已回到当前场景开头；你的选择和成就仍保留。');}
-  function playIntroduction(launch){
+  function playIntroduction(launch,options={}){
     if(introduction.isPlaying())return;
     halt();setMode();let resumeActive=active;active=false;syncControls();
-    introduction.play({onCovered(){
+    introduction.play({...options,onCovered(){
       if(launch){launch();resumeActive=active;}halt();active=false;syncControls();
     },onFinish(){
       active=resumeActive;syncControls();
@@ -70,11 +71,12 @@
         (choiceOpen?el('choice-question'):!el('ending-screen').hidden?el('ending-home'):el('read-surface')).focus({preventScroll:true});}
     }});
   }
-  function launchWithIntroduction(launch){
-    if(introduction.hasSeen()){el('intro-recall').hidden=false;launch();}
-    else{el('intro-recall').hidden=true;playIntroduction(launch);}
+  function launchWithIntroduction(launch,newRun=false){
+    const seen=introduction.hasSeen(),helpNeeded=!introduction.hasSeenHelp();el('intro-recall').hidden=!seen;
+    if(!seen||helpNeeded||newRun)playIntroduction(launch,{help:helpNeeded,skipOpening:seen,card:newRun?'始':null});
+    else launch();
   }
-  function startNew(){launchWithIntroduction(beginNewRun);}
+  function startNew(){launchWithIntroduction(beginNewRun,true);}
   function restore(save){if(!validSave(save)){toast('这份存档无法读取。');return;}launchWithIntroduction(()=>restoreSave(save));}
   shell.onStart(({nodeId,newRun,state})=>{if(newRun){startNew();return;}if(!validRun(state)){toast('这个节点缺少完整记录，请从押运车开始。');return;}
     launchWithIntroduction(()=>{setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});});
@@ -128,16 +130,16 @@
   function showEnding(){
     if(S.nodes[run.nodeId].end==='death'){revealEnding();return;}
     if(introduction.isPlaying())return;halt();setMode();active=false;syncControls();
-    introduction.playConclusion({onCovered(){revealEnding();},onFinish(){active=true;syncControls();el('ending-home').focus({preventScroll:true});}});
+    introduction.playConclusion({card:'终',onCovered(){leave();},onFinish(){el('start').focus({preventScroll:true});}});
   }
   function revealEnding(){halt();setMode();setModal(true);const dead=S.nodes[run.nodeId].end==='death';el('ending-screen').hidden=false;el('story').classList.toggle('bright-ending',!dead);
     el('ending-kicker').textContent=dead?S.title:S.protagonist;
     const ending=S.endings[dead?'death':'survival'];el('ending-title').textContent=ending.title;el('ending-copy').textContent=ending.text;
-    el('retry-choice').hidden=!dead;const target=dead?retryPoint():null;el('retry-choice').textContent=target?'回到关键选择 · '+S.nodes[target.point.nodeId].title:'从头重新开始';syncControls();el('reread-story').hidden=dead;el('ending-home').focus();autosave();}
+    el('retry-choice').hidden=!dead;const target=dead?retryPoint():null;el('retry-choice').textContent=target?'从上一个选择开始 · '+S.nodes[target.point.nodeId].title:'从头重新开始';syncControls();el('reread-story').hidden=dead;el('ending-home').focus();autosave();}
   function leave(ended=false){autosave();halt();setMode();active=false;syncControls();el('choice-screen').hidden=true;el('ending-screen').hidden=true;shell.showHome();
     if(ended){const p=shell.getProgress(),a=Math.max(0,p.achievements.length-(run.initialAchievements||0)),n=Math.max(0,p.visited.length-(run.initialNodes||0));
-      openDialog('这一遍，留下了痕迹',`「从选择的章节开始」已可回看本轮到达的节点。新增 ${n} 个节点、${a} 项成就。已到达的节点会保留当时的选择，成就可在开始界面查看。`);}}
-  function applySettings(){el('story').style.setProperty('--reader-size',library.settings.font+'px');}
+      openDialog('这一遍，留下了痕迹',`「按章节开始」已可回看本轮到达的节点。新增 ${n} 个节点、${a} 项成就。已到达的节点会保留当时的选择，成就可在开始界面查看。`);}}
+  function applySettings(){el('story').style.setProperty('--reader-size',library.settings.font+'px');el('story').style.setProperty('--reader-leading',library.settings.lineHeight);}
   function panelButton(label,action,className=''){const b=document.createElement('button');b.textContent=label;b.className='panel-button '+className;b.onclick=action;return b;}
   function closePanel(){el('player-dialog').close();panelMode='';syncControls();if(active){if(typing&&resumeType){if(library.settings.speed===0)completeText();else resumeType();}else schedule();}(returnFocus?.isConnected?returnFocus:el('read-surface')).focus({preventScroll:true});}
   function openPanel(mode){halt();setMode();returnFocus=document.activeElement;panelMode=mode;const body=el('player-panel-body');body.replaceChildren();
@@ -146,8 +148,8 @@
     if(mode==='pause'){
       body.append(panelButton('继续阅读',closePanel,'primary'),panelButton('保存',()=>openPanel('save')),panelButton('读取',()=>openPanel('load')),panelButton('阅读设置',()=>openPanel('settings')),panelButton('回到开始界面',()=>{el('player-dialog').close();leave();}));
     }else if(mode==='settings'){
-      for(const [key,title,min,max] of [['speed','逐字间隔',0,65],['autoRate','自动翻页速度',1,5],['font','正文字号',18,28]]){const label=document.createElement('label');label.textContent=title;const input=document.createElement('input');input.type='range';input.min=min;input.max=max;input.value=library.settings[key];
-        const format=()=>key==='autoRate'?['慢','较慢','标准','较快','快'][Number(input.value)-1]:key==='speed'?(Number(input.value)===0?'立即显示':input.value+' ms'):input.value+' px';const value=document.createElement('output');value.textContent=format();input.setAttribute('aria-label',title);input.oninput=()=>{library.settings[key]=Number(input.value);value.textContent=format();applySettings();persist();};label.append(input,value);body.append(label);}
+      for(const [key,title,min,max] of [['speed','逐字间隔',0,65],['autoRate','自动翻页速度',1,5],['font','正文字号',18,28],['lineHeight','正文行距',1.6,2.6]]){const label=document.createElement('label');label.textContent=title;const input=document.createElement('input');input.type='range';input.min=min;input.max=max;input.step=key==='lineHeight'?'.05':'1';input.value=library.settings[key];
+        const format=()=>key==='lineHeight'?Number(input.value).toFixed(2)+' 倍':key==='autoRate'?['慢','较慢','标准','较快','快'][Number(input.value)-1]:key==='speed'?(Number(input.value)===0?'立即显示':input.value+' ms'):input.value+' px';const value=document.createElement('output');value.textContent=format();input.setAttribute('aria-label',title);input.oninput=()=>{library.settings[key]=Number(input.value);value.textContent=format();applySettings();persist();};label.append(input,value);body.append(label);}
       const p=document.createElement('p');p.className='panel-subtle';p.textContent='自动阅读会连续播放旁白和对话，到下一个选项时停止。翻页速度控制文字显示后的停留时间。空格 / Enter：继续 · Esc：暂停 · 1 / 2：选择 · H：隐藏文字';body.append(p);
     }else if(mode==='log'){
       const area=document.createElement('div');area.className='backlog';if(!log.length){area.textContent='这一页才刚刚展开。';}

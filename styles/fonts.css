@@ -1,0 +1,6 @@
+/* Local OFL 1.1 derivatives; copyright and license: assets/fonts/OFL.txt. */
+@font-face{font-family:"Tomorrow Songti";src:url("../assets/fonts/tomorrow-songti.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Tomorrow Mincho Title";src:url("../assets/fonts/tomorrow-mincho-title.woff2") format("woff2");font-style:normal;font-weight:900;font-display:swap;unicode-range:U+59CB,U+7EC8}
+:root{--font-story:"Tomorrow Songti","Songti SC","STSong","SimSun",serif}
+.story-copy,.bulletin-copy,.intro-copy,.backlog p,.choice-question,.story-choice,.help-panel{font-family:var(--font-story)}
+.sequence-title{font-family:"Tomorrow Mincho Title",var(--font-story);font-weight:900;font-synthesis:none;font-size:clamp(90px,16vw,160px);letter-spacing:0;padding-left:0;transform:scaleX(.82);text-shadow:none}

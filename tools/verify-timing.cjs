@@ -15,6 +15,7 @@ key('2');assert.equal(saved().run.nodeId,'03');assert.equal(JSON.parse(mem.get('
 const paused=saved().pageKey;click('pause-read');assert(el('player-dialog').open);assert(el('auto-read').disabled);
 el('player-panel-body').children.find(b=>b.textContent==='阅读设置').onclick();
 const input=el('player-panel-body').children.flatMap(n=>n.children).find(n=>n.attributes['aria-label']==='自动翻页速度');assert(input);
+const spacing=el('player-panel-body').children.flatMap(n=>n.children).find(n=>n.attributes['aria-label']==='正文行距');assert(spacing);spacing.value='2.2';spacing.oninput();assert.equal(el('story').style['--reader-leading'],2.2);
 input.value='5';input.oninput();assert.equal(JSON.parse(mem.get('tomorrow.player.v1')).settings.autoRate,5);click('player-panel-close');assert.equal(saved().pageKey,paused);
 click('auto-read');const text=el('story-copy').textContent;assert([...timers.values()].some(t=>t.ms===Math.max(800,Array.from(text).length*30)),'fast setting controls dwell time');
 click('auto-read');assert.equal(el('auto-read').attributes['aria-pressed'],false);
