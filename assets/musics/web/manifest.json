@@ -133,7 +133,7 @@
     "21B": "calm3",
     "22": "calm3"
   },
-  "menu": "calm3",
+  "menu": null,
   "sceneRules": {
     "07": {
       "flag": "sunset",

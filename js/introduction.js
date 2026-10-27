@@ -1,14 +1,14 @@
 /* Full-screen opening and survival conclusion share the paragraph sequence. */
 (function () {
   'use strict';
-  const KEY='tomorrow.introduction.v1',HELP_KEY='tomorrow.help.v1',story=window.MeaningStory;
+  const KEY='tomorrow.introduction.v1',HELP_KEY='tomorrow.help.v1',MUSIC_CHOICE_KEY='tomorrow.music-choice.v1',story=window.MeaningStory;
   const helpPages=[
     {title:'按自己的节奏阅读',text:'右下角可以开启自动播放或快进。\n在「暂停 → 阅读设置」里，可调整字号、行距和播放速度。'},
     {title:'随时停下，也能接着走',text:'阅读时可以随时暂停、保存进度。\n之后从主页「继续」恢复，或在「流程图」中回到已解锁的节点。\n选择「从头开始」可重新游玩，已解锁的节点和成就仍会保留。\n进度保存在当前浏览器。'},
     {title:'失败后，再试一次',text:'如果选错或未能生还，点击「从上一个选择开始」重新尝试。\n会回到影响这次结局的关键选择，之后的选择可以重做。'},
-    {title:'愿你有所收获',text:'预计游玩约十分钟，选择不会被评分。\n故事并不难，请尽量尝试抵达最终结局。\n感谢游玩，愿这段经历为你留下一点思考。'}
+    {title:'愿你有所收获',text:'预计游玩约十分钟，选择不会被评分。\n故事并不难，请尽量尝试抵达最终结局。\n感谢游玩，愿这段经历为你留下一点思考。\n\n本作有音乐，可以在右上角切换开关。\n建议佩戴耳机游玩。'}
   ];
-  let helpSeen=false,helpIndex=0;
+  let helpSeen=false,musicChoiceSeen=false,helpIndex=0;
   let paragraphs=story.introduction,mode='introduction';
   const layer=document.getElementById('introduction'),text=document.getElementById('intro-copy'),main=document.getElementById('game-main');
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -37,7 +37,7 @@
     }
   }
   let seen=false,playing=false,index=0,timer=0,remaining=0,started=0,next=null,callbacks=null,previousInert=false;
-  try{seen=localStorage.getItem(KEY)==='seen';helpSeen=localStorage.getItem(HELP_KEY)==='seen';}catch{}
+  try{seen=localStorage.getItem(KEY)==='seen';helpSeen=localStorage.getItem(HELP_KEY)==='seen';musicChoiceSeen=localStorage.getItem(MUSIC_CHOICE_KEY)==='chosen';}catch{}
   function arm(){if(!playing||document.hidden)return;started=Date.now();timer=setTimeout(()=>{timer=0;const callback=next;next=null;callback();},remaining);}
   function wait(ms,callback){clearTimeout(timer);remaining=ms;next=callback;arm();}
   function phase(value){layer.dataset.phase=value;}
@@ -103,16 +103,26 @@
     document.getElementById('help-title').textContent=helpPages[helpIndex].title;
     document.getElementById('help-copy').textContent=helpPages[helpIndex].text;
     document.getElementById('help-count').textContent=(helpIndex+1)+' / '+helpPages.length;
+    const last=helpIndex===helpPages.length-1;
     document.getElementById('help-prev').hidden=helpIndex===0;
-    document.getElementById('help-next').textContent=helpIndex===helpPages.length-1?'准备好了，开始':'下一页 →';
-    window.MeaningMotion.enter(document.querySelector('.help-panel'));document.getElementById('help-next').focus({preventScroll:true});
+    document.getElementById('help-next').hidden=last;
+    document.getElementById('help-music-choice').hidden=!last;
+    window.MeaningMotion.enter(document.querySelector('.help-panel'));
+    document.getElementById(last?'help-title':'help-next').focus({preventScroll:true});
   }
   document.getElementById('help-prev').onclick=()=>{if(playing&&layer.dataset.phase==='help'&&helpIndex>0){helpIndex--;renderHelp();}};
   document.getElementById('help-next').onclick=()=>{
     if(!playing||layer.dataset.phase!=='help')return;
     if(helpIndex<helpPages.length-1){helpIndex++;renderHelp();}
-    else{helpSeen=true;try{localStorage.setItem(HELP_KEY,'seen');}catch{}beginPresentation();}
   };
+  function chooseMusic(enabled){
+    if(!playing||layer.dataset.phase!=='help'||helpIndex!==helpPages.length-1)return;
+    window.MeaningMusic.setEnabled(enabled);helpSeen=true;musicChoiceSeen=true;
+    try{localStorage.setItem(HELP_KEY,'seen');localStorage.setItem(MUSIC_CHOICE_KEY,'chosen');}catch{}
+    beginPresentation();
+  }
+  document.getElementById('help-music-on').onclick=()=>chooseMusic(true);
+  document.getElementById('help-music-off').onclick=()=>chooseMusic(false);
   function playSequence(handlers,type){
     if(playing)return;playing=true;mode=type;paragraphs=type==='conclusion'?story.conclusion:story.introduction;callbacks=handlers;index=0;previousInert=main.inert;
     main.inert=true;layer.classList.toggle('conclusion',mode==='conclusion');layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');layer.style.setProperty('--daylight','0');document.body.classList.add('intro-playing');layer.hidden=false;layer.classList.remove('is-paused');
@@ -120,7 +130,7 @@
     layer.dataset.transition='';layer.style.setProperty('--finale-rise',finaleTransition.rise+'ms');
     layer.style.setProperty('--intro-black',closing.cover+'ms');layer.style.setProperty('--intro-reveal',closing.reveal+'ms');
     layer.dataset.presentation=callbacks.skipOpening?'card':'sequence';
-    if(callbacks.help&&!helpSeen){helpIndex=0;renderHelp();}else beginPresentation();
+    if(callbacks.help&&(!helpSeen||!musicChoiceSeen)){helpIndex=helpSeen?helpPages.length-1:0;renderHelp();}else beginPresentation();
   }
   // Reading time stops while the page is in the background.
   document.addEventListener('visibilitychange',()=>{
@@ -133,13 +143,14 @@
     if(event.target===document.getElementById('music-toggle')&&(event.key==='Enter'||event.key===' '))return;
     if(layer.dataset.phase==='help'){
       const prev=document.getElementById('help-prev'),nextButton=document.getElementById('help-next');
-      if(event.key==='Tab'){event.preventDefault();const buttons=[...(!prev.hidden?[prev]:[]),nextButton,document.getElementById('music-toggle')];const index=buttons.indexOf(event.target);buttons[(index+(event.shiftKey?-1:1)+buttons.length)%buttons.length].focus();return;}
-      if((event.key==='Enter'||event.key===' ')&&(event.target===prev||event.target===nextButton))return;
+      const buttons=[...(!prev.hidden?[prev]:[]),...(!nextButton.hidden?[nextButton]:[document.getElementById('help-music-on'),document.getElementById('help-music-off')]),document.getElementById('music-toggle')];
+      if(event.key==='Tab'){event.preventDefault();const index=buttons.indexOf(event.target);const next=index<0?(event.shiftKey?buttons.length-1:0):(index+(event.shiftKey?-1:1)+buttons.length)%buttons.length;buttons[next].focus();return;}
+      if((event.key==='Enter'||event.key===' ')&&buttons.includes(event.target))return;
     }
     if(event.key==='Tab'){event.preventDefault();const toggle=document.getElementById('music-toggle');(event.target===toggle?layer:toggle).focus();return;}
     if([' ','Spacebar','Enter','Escape','ArrowRight','ArrowLeft','Tab','1','2','h','H'].includes(event.key)){
       event.preventDefault();event.stopImmediatePropagation();
     }
   },true);
-  window.MeaningIntroduction=Object.freeze({hasSeen:()=>seen,hasSeenHelp:()=>helpSeen,isPlaying:()=>playing,play:handlers=>playSequence(handlers,'introduction'),playConclusion:handlers=>playSequence(handlers,'conclusion')});
+  window.MeaningIntroduction=Object.freeze({hasSeen:()=>seen,hasSeenHelp:()=>helpSeen&&musicChoiceSeen,isPlaying:()=>playing,play:handlers=>playSequence(handlers,'introduction'),playConclusion:handlers=>playSequence(handlers,'conclusion')});
 })();

@@ -41,7 +41,7 @@ for key,(number,slug,description) in TRACKS.items():
   'sourceSha256':hashlib.sha256(source.read_bytes()).hexdigest(),'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
  print(key,tracks[key]['duration'],'seconds,',target.stat().st_size,'bytes')
 scenes={scene:key for key,ids in SCENES.items() for scene in ids};assert len(scenes)==sum(map(len,SCENES.values()))==56
-manifest={'format':'audio/mp4; codecs="mp4a.40.2"','fadeMs':1600,'tracks':tracks,'scenes':scenes,'sceneRules':SCENE_RULES,'menu':'calm3'}
+manifest={'format':'audio/mp4; codecs="mp4a.40.2"','fadeMs':1600,'tracks':tracks,'scenes':scenes,'sceneRules':SCENE_RULES,'menu':None}
 (OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
 runtime={**manifest,'tracks':{key:{'file':value['file'],'duration':value['duration']} for key,value in tracks.items()}}
 (ROOT/'js/music-data.js').write_text('/* Generated from the music filenames and scene mapping by tools/build_music.py. */\nwindow.MeaningMusicData = '+json.dumps(runtime,ensure_ascii=False,separators=(',',':'))+';\n')

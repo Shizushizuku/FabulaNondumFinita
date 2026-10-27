@@ -11,6 +11,11 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(track.source)).digest('hex'),track.sourceSha256);
  }
  assert.equal(t.audios.length,0,'no media allocation or autoplay before interaction');
+ t.click('chapters');await flush();assert(t.audios.every(a=>a.playCalls===0),'menu interactions unlock audio without playing it');
+ t.click('to-achievements');await flush();assert(t.audios.every(a=>a.paused));
+ t.context.window.MeaningShell.showHome();t.click('music-toggle');t.click('music-toggle');await flush();
+ assert(t.audios.every(a=>a.playCalls===0),'enabling music on the home screen stays silent');
+ assert.equal(data.menu,null);assert.equal(manifest.menu,null);
  t.start();while(t.context.window.MeaningIntroduction.isPlaying())t.tickNext();await flush();
  assert.equal(t.audios.length,2);assert(t.audios.some(a=>a.src===data.tracks.tension.file&&!a.paused),'new story uses tense arrival music');
  t.elapse(1600);const before=t.audios.reduce((n,a)=>n+a.playCalls,0);music.scene('01');await flush();assert.equal(t.audios.reduce((n,a)=>n+a.playCalls,0),before,'same track continues without restart');
@@ -20,7 +25,9 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
  music.sequence('opening');await flush();music.scene('08');await flush();assert(t.audios.some(a=>a.src===data.tracks.opening.file&&!a.paused),'intro owns the cue over hidden story setup');
  music.endSequence();await flush();assert(t.audios.some(a=>a.src===data.tracks.snow.file&&!a.paused));
  music.sequence('ending');await flush();music.view('home');await flush();assert(t.audios.some(a=>a.src===data.tracks.ending.file&&!a.paused),'ending music continues through the end card');
- music.endSequence();await flush();assert(t.audios.some(a=>a.src===data.tracks.calm3.file&&!a.paused));
+ music.endSequence();await flush();assert(t.audios.every(a=>a.paused),'home is silent once the end card finishes');
+ t.visibility(true);t.visibility(false);await flush();assert(t.audios.every(a=>a.paused),'returning to the home tab stays silent');
+ music.view('story');await flush();assert(t.audios.some(a=>!a.paused),'resuming the story restores its cue');
  t.elapse(1600);t.click('pause-read');t.el('player-panel-body').children.find(b=>b.textContent==='阅读设置').onclick();const volume=t.el('player-panel-body').children.flatMap(n=>n.children).find(n=>n.attributes['aria-label']==='音乐音量');assert(volume);volume.value='20';volume.oninput();assert.equal(music.getSettings().volume,.2);t.click('player-panel-close');music.setVolume(.2);assert.equal(music.getSettings().volume,.2);music.duck(true);assert(Math.abs(t.audioContexts[0].gains[0].gain.value-.06)<1e-9);music.duck(false);
  t.visibility(true);assert(t.audios.every(a=>a.paused));t.visibility(false);await flush();assert(t.audios.some(a=>!a.paused));
  music.setEnabled(false);t.elapse(500);await flush();assert(t.audios.every(a=>a.paused));assert.equal(JSON.parse(t.mem.get('tomorrow.audio.v1')).enabled,false);
@@ -45,8 +52,24 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
  }
  count(story.start,{});assert(survivalChanges.length>0);assert.equal(Math.min(...survivalChanges),4);assert.equal(Math.max(...survivalChanges),5);
  // Desktop file preview has a volume-based fade when Web Audio is unavailable.
- const fallback=createEnv(true,null,true,{audio:true});fallback.context.window.MeaningMusic.unlock();await flush();fallback.elapse(800);
+ const fallback=createEnv(true,null,true,{audio:true});fallback.context.window.MeaningMusic.view('story');fallback.context.window.MeaningMusic.scene('00');fallback.context.window.MeaningMusic.unlock();await flush();fallback.elapse(800);
  assert(fallback.audios.some(a=>a.volume>0&&a.volume<.35));fallback.elapse(800);assert(fallback.audios.some(a=>Math.abs(a.volume-.35)<1e-6));
- const denied=createEnv(true,null,true,{audio:true,audioDenied:true});denied.context.window.MeaningMusic.unlock();await flush();assert(denied.el('music-toggle').textContent.includes('开启'));assert(denied.el('home').hidden===false);
+ const denied=createEnv(true,null,true,{audio:true,audioDenied:true});denied.context.window.MeaningMusic.view('story');denied.context.window.MeaningMusic.scene('00');denied.context.window.MeaningMusic.unlock();await flush();assert(denied.el('music-toggle').textContent.includes('开启'));assert(denied.el('home').hidden===false);
+ const pendingHome=createEnv(true,null,true,{audio:true,webAudio:true}),homeMusic=pendingHome.context.window.MeaningMusic;
+ homeMusic.unlock();homeMusic.view('story');homeMusic.scene('00');homeMusic.view('home');await flush();
+ assert(pendingHome.audios.every(a=>a.paused),'a late play promise cannot restart music after returning home');
+ // Choosing sound at the end of help controls the opening; the global toggle remains available.
+ for(const enabled of [true,false]){
+  const consent=createEnv(false,null,false,{audio:true,webAudio:true});consent.start();
+  for(let i=0;i<3;i++)consent.click('help-next');await flush();
+  assert(consent.audios.every(a=>a.playCalls===0),'help remains silent before the explicit choice');
+  consent.click(enabled?'help-music-on':'help-music-off');await flush();
+  assert.equal(consent.context.window.MeaningMusic.getSettings().enabled,enabled);
+  assert.equal(JSON.parse(consent.mem.get('tomorrow.audio.v1')).enabled,enabled);
+  assert.equal(consent.audios.some(a=>!a.paused),enabled);
+  consent.click('music-toggle');await flush();consent.elapse(500);
+  assert.equal(consent.context.window.MeaningMusic.getSettings().enabled,!enabled);
+  assert.equal(consent.audios.some(a=>!a.paused),!enabled,'the corner switch can change the initial choice');
+ }
  console.log('Music passed: 8 valid AAC files, original hashes intact, all 56 scene cues, gesture unlock, two-deck crossfades, same-track continuity, sequence priority, mute/volume/background pause and load retry.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

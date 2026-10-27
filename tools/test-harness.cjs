@@ -24,6 +24,8 @@ if(initialLibrary)mem.set('tomorrow.player.v1',JSON.stringify(initialLibrary));
 if(options.progress)mem.set('tomorrow.progress.v1',JSON.stringify(options.progress));
 if(introSeen)mem.set('tomorrow.introduction.v1','seen');
 if(options.helpSeen??introSeen)mem.set('tomorrow.help.v1','seen');
+if(options.musicChoiceSeen??introSeen)mem.set('tomorrow.music-choice.v1','chosen');
+if(options.musicSettings)mem.set('tomorrow.audio.v1',JSON.stringify(options.musicSettings));
 class FakeAudio{
  constructor(){audios.push(this);this.src='';this.paused=true;this.currentTime=0;this.readyState=4;this.volume=1;this.playCalls=0;}
  play(){this.playCalls++;if(options.audioDenied){const error=new Error('blocked');error.name='NotAllowedError';return Promise.reject(error);}this.paused=false;return Promise.resolve();}

@@ -4,7 +4,7 @@
   const data=window.MeaningMusicData,button=document.getElementById('music-toggle'),KEY='tomorrow.audio.v1';
   let settings={enabled:true,volume:.35};try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)settings={enabled:saved.enabled!==false,volume:Math.max(0,Math.min(1,Number(saved.volume)||0))};}catch{}
   let context=null,master=null,decks=[],unlocked=false,blocked=false,failed=false,hidden=false,ducked=false;
-  let view='home',scene=null,sceneFlags={},sequence=null,desired=data.menu,version=0,active=null,pending=null;
+  let view='home',scene=null,sceneFlags={},sequence=null,desired=null,version=0,active=null,pending=null;
   const positions=new Map();
   const now=()=>context?context.currentTime*1000:Date.now();
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings));}catch{}}
@@ -54,12 +54,20 @@
   }
   function chosen(){
     if(sequence)return sequence==='opening'?'opening':'ending';
-    if(view!=='story'||!scene)return data.menu;
+    if(view!=='story'||!scene)return null;
     const rule=data.sceneRules?.[scene];return rule?(sceneFlags[rule.flag]?rule.yes:rule.no):data.scenes[scene];
   }
-  function select(){const key=chosen();if(!key)return;if(key!==desired){desired=key;version++;}playDesired();}
+  function silence(){
+    version++;active=null;pending=null;blocked=false;failed=false;
+    for(const deck of decks){
+      deck.request=0;clearTimeout(deck.loadTimer);deck.loadTimer=0;freeze(deck);remember(deck);deck.audio.pause();deck.level=0;
+      if(deck.gain)deck.gain.gain.setValueAtTime(0,context.currentTime);
+    }
+    applyVolume();status();
+  }
+  function select(){const key=chosen()||null;if(key!==desired){desired=key;version++;}if(!key){silence();return;}playDesired();}
   function playDesired(){
-    status();if(!settings.enabled||!unlocked||hidden||!ensure())return;
+    status();if(!desired||!settings.enabled||!unlocked||hidden||!ensure())return;
     if(active?.track===desired&&!active.audio.paused&&!pending){if(active.fade?.to!==1&&active.level!==1)fade(active,1,data.fadeMs);return;}
     if(pending?.track===desired)return;
     const token=++version;failed=false;

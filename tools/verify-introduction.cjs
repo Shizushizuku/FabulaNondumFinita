@@ -14,7 +14,14 @@ function finishIntro(env){
 }
 start();assert.equal(el('introduction').dataset.phase,'help');assert(el('help-prev').hidden);assert.equal(el('help-count').textContent,'1 / 4');assert.equal(timers.size,0,'help pages never force a timed advance');
 click('help-next');click('help-prev');assert.equal(el('help-count').textContent,'1 / 4');
-for(let i=0;i<4;i++)click('help-next');assert(intro.isPlaying());assert(!el('introduction').hidden);assert(el('game-main').inert);assert(el('intro-recall').hidden);
+for(let i=0;i<3;i++)click('help-next');
+assert(el('help-copy').textContent.includes('本作有音乐，可以在右上角切换开关。'));
+assert(el('help-copy').textContent.endsWith('建议佩戴耳机游玩。'));
+assert(el('help-next').hidden);assert(!el('help-music-choice').hidden);assert.equal(context.document.activeElement,el('help-title'));
+click('help-next');assert.equal(el('introduction').dataset.phase,'help','the old next action cannot bypass the music choice');
+assert(key('Enter').prevented);assert.equal(mem.has('tomorrow.music-choice.v1'),false);
+click('help-music-on');assert(intro.isPlaying());assert(!el('introduction').hidden);assert(el('game-main').inert);assert(el('intro-recall').hidden);
+assert.equal(mem.get('tomorrow.music-choice.v1'),'chosen');assert(context.window.MeaningMusic.getSettings().enabled);
 assert.equal(el('intro-copy').textContent,expected[0]);assert.equal(mem.has('tomorrow.introduction.v1'),false,'do not mark an unfinished opening as watched');
 assert.equal(context.window.MeaningShell.getProgress().visited.length,0,'story begins after the black transition');
 assert(key(' ').prevented);assert(key('Escape').prevented);advance();assert(intro.isPlaying());
@@ -32,7 +39,7 @@ finishIntro(t);assert.equal(JSON.stringify(saved()),before);assert(el('intro-rec
 const loaded=createEnv(true,JSON.parse(mem.get('tomorrow.player.v1')),true);loaded.click('continue-story');
 assert(!loaded.context.window.MeaningIntroduction.isPlaying());assert(!loaded.el('intro-recall').hidden);assert.equal(loaded.saved().pageKey,saved().pageKey);
 // Full animation timings also complete, with more reading time for longer paragraphs.
-const animated=createEnv(false,null,false);animated.start();for(let i=0;i<4;i++)animated.click('help-next');const holds=[];
+const animated=createEnv(false,null,false);animated.start();for(let i=0;i<3;i++)animated.click('help-next');animated.click('help-music-on');const holds=[];
 for(let steps=0;animated.context.window.MeaningIntroduction.isPlaying();steps++){
  assert(steps<100);const [id,timer]=animated.timers.entries().next().value;
  if(animated.el('introduction').dataset.phase==='hold')holds.push(timer.ms);
@@ -44,7 +51,7 @@ console.log('Introduction passed: exact five paragraphs, first-view gating, fade
 // Existing readers receive the newly added help once, then resume their exact page.
 const existing=createEnv(true,JSON.parse(mem.get('tomorrow.player.v1')),true,{helpSeen:false,autoCards:false});
 existing.click('continue-story');assert.equal(existing.el('introduction').dataset.phase,'help');
-for(let i=0;i<4;i++)existing.click('help-next');existing.finishSequence();
+for(let i=0;i<3;i++)existing.click('help-next');existing.click('help-music-on');existing.finishSequence();
 assert.equal(existing.saved().pageKey,saved().pageKey);assert.equal(existing.mem.get('tomorrow.help.v1'),'seen');
 const newRun=createEnv(false,null,true,{autoCards:false});newRun.start();
 let cardStart=null,cardEnd=null;
@@ -55,3 +62,14 @@ while(newRun.context.window.MeaningIntroduction.isPlaying()){
  newRun.tickNext();
 }
 assert.equal(cardEnd-cardStart,2400);assert.equal(newRun.el('sequence-title').textContent,'始');
+// Older readers only receive the final music question, without losing their reading position.
+const upgrade=createEnv(true,JSON.parse(mem.get('tomorrow.player.v1')),true,{musicChoiceSeen:false});
+upgrade.click('continue-story');assert.equal(upgrade.el('help-count').textContent,'4 / 4');assert(upgrade.el('help-next').hidden);
+upgrade.key('Tab');assert.equal(upgrade.context.document.activeElement,upgrade.el('help-prev'));
+upgrade.key('Tab');assert.equal(upgrade.context.document.activeElement,upgrade.el('help-music-on'));
+upgrade.key('Tab');assert.equal(upgrade.context.document.activeElement,upgrade.el('help-music-off'));
+upgrade.key('Enter');assert.equal(upgrade.context.window.MeaningMusic.getSettings().enabled,false);upgrade.finishSequence();
+assert.equal(upgrade.saved().pageKey,saved().pageKey);assert.equal(upgrade.mem.get('tomorrow.music-choice.v1'),'chosen');
+const remembered=createEnv(true,JSON.parse(upgrade.mem.get('tomorrow.player.v1')),true,{musicSettings:JSON.parse(upgrade.mem.get('tomorrow.audio.v1'))});
+remembered.click('continue-story');assert(!remembered.context.window.MeaningIntroduction.isPlaying());assert.equal(remembered.context.window.MeaningMusic.getSettings().enabled,false);
+console.log('Music choice passed: explicit on/off selection, no default or bypass, keyboard access, saved preference and one-page migration for existing readers.');

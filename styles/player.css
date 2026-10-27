@@ -124,6 +124,11 @@ body:has(.introduction[data-phase=threshold]:not([hidden])) .music-toggle{visibi
 .help-panel small{font:12px monospace;letter-spacing:.3em;color:#b7a48b}.help-panel h2{font-size:clamp(25px,4vw,38px);font-weight:400;letter-spacing:.12em;line-height:1.6;margin:24px 0 28px}
 .help-panel p{white-space:pre-line;font-size:clamp(16px,2vw,20px);line-height:2.1;letter-spacing:.04em;border-left:2px solid #b9987c;padding-left:22px;margin:0 0 36px}
 .help-actions{display:flex;justify-content:space-between;gap:20px}.help-actions button{padding:12px 20px;min-height:44px;font-size:14px;letter-spacing:.1em;border:1px solid #88705b;color:#e7d8c3}.help-actions button:last-child{margin-left:auto;background:#2a2119}.help-actions button:hover{background:#3b2d21}
+.help-music-choice{margin:-10px 0 24px}
+.help-music-choice>span{display:block;margin-bottom:14px;color:#fff;font-size:15px;line-height:1.8}
+.help-music-buttons{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.help-music-buttons button{padding:14px 12px;min-height:48px;font-size:16px;letter-spacing:.06em;border:1px solid #ffffff80;color:#fff;background:#ffffff08}
+.help-music-buttons button:hover,.help-music-buttons button:focus-visible{background:#ffffff18;border-color:#fff;outline-color:#fff}
 .sequence-title{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;color:inherit;font-size:clamp(70px,14vw,130px);font-weight:400;letter-spacing:.2em;padding-left:.2em;text-shadow:0 0 35px #bba38025}
 .introduction[data-phase^="card-"] .sequence-title{display:flex}
 .introduction:not(.conclusion)[data-phase^="card-"]{background:#050505}
