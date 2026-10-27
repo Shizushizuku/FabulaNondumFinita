@@ -138,7 +138,7 @@
     el('story').dataset.readingKind=page.kind;
     updateRecall();
     syncControls();
-    el('text-window').scrollTop=0;
+    el('text-window').scrollTop=0;el('story-copy').scrollTop=0;
     el('page-number').textContent=String(pageIndex+1).padStart(2,'0')+' / '+String(pageList.length).padStart(2,'0');
     el('story').classList.toggle('bulletin-page',page.kind==='caption');el('bulletin-sheet').hidden=page.kind!=='caption';el('text-window').hidden=page.kind==='caption';
     const target=page.kind==='caption'?el('bulletin-copy'):el('story-copy');el('story-copy').textContent='';el('bulletin-copy').textContent='';
