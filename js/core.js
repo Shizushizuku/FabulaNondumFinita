@@ -1,46 +1,28 @@
 /* Pure narrative rules shared by the player and route validation. */
 (function (root) {
   'use strict';
-  const clone = value => JSON.parse(JSON.stringify(value));
-  function matches(expression, flags) {
-    return !expression || expression.split('&&').every(part => {
-      const [key, value] = part.split('==').map(x => x.trim());
-      return flags[key] === value;
-    });
+  const clone=value=>JSON.parse(JSON.stringify(value));
+  function matches(condition,flags){
+    if(!condition)return true;
+    return Object.entries(condition).every(([key,value])=>key==='any'?value.some(c=>matches(c,flags)):flags[key]===value);
   }
-  function next(id, flags, nodes) {
-    if (id === 'KR') return flags.kurt === '听完' ? 'KT' : 'X2';
-    if (id === 'DR') return flags.ward === '去' ? 'DT' : 'X3';
-    if (id === 'M4') return flags.poem === '改诗' && flags.retell === '复述' ? 'X4' : 'F';
-    if (id === 'CHECK') return flags.burn === '不烧' ? 'Z1' : flags.share === '谈' ? 'Z2' : 'Z3';
-    return nodes[id].next;
-  }
-  function options(id, flags, nodes) {
-    return nodes[id].options.filter(o => id !== 'TASK' || o.to === (flags.record === '寄语' ? 'END1' : 'END2'));
-  }
-  function pages(id, flags, name, data, incoming) {
-    const scene = data.nodes[id], out = [];
-    if (scene.bulletin) out.push({kind:'bulletin', key:id+':bulletin', text:scene.bulletin});
-    const paragraphs = [...(data.transitions[incoming + '>' + id] || []), ...scene.paragraphs];
-    let group = '', groupKey='';
+  function next(id,flags,nodes){const node=nodes[id];return node.routes.find(r=>matches(r.when,flags))?.to||node.next;}
+  const options=(id,flags,nodes)=>nodes[id].options;
+  function pages(id,flags,name,data){
+    const out=[];let group='',groupKey='';
     const flush=()=>{if(group)out.push({kind:'prose',key:groupKey,text:group});group='';groupKey='';};
-    for (const para of paragraphs) {
-      if (!matches(para.when, flags)) continue;
-      const text = para.text.replaceAll('【名字】', name);
-      const key=para.sourceId+':'+para.segment;
-      if(para.kind==='dialogue'){
-        flush();
-        out.push({kind:'dialogue',key:key+':'+para.sentence,speaker:para.speaker,text:para.speaker+'：“'+text+'”',waitForClick:true});
-        continue;
+    const paragraphs=data.nodes[id].paragraphs.flatMap(p=>p.kind==='replay'?(data.jokes[flags.joke]||[]):[p]);
+    for(const para of paragraphs){
+      if(!matches(para.when,flags))continue;
+      if(para.kind==='dialogue'||para.kind==='caption'){
+        flush();out.push({...para,text:para.kind==='dialogue'?para.speaker+'：“'+para.text+'”':para.text,waitForClick:true});continue;
       }
-      if (group && group.length + text.length > 125) flush();
-      if(!group)groupKey=key;
-      group += (group ? '\n\n' : '') + text;
+      if(group&&group.length+para.text.length>125)flush();
+      if(!group)groupKey=para.key;
+      group+=(group?'\n\n':'')+para.text;
     }
-    flush();
-    return out;
+    flush();return out;
   }
-  const core = {clone, matches, next, options, pages};
-  root.MeaningCore = core;
-  if (typeof module !== 'undefined') module.exports = core;
-})(typeof window === 'undefined' ? globalThis : window);
+  const core={clone,matches,next,options,pages};root.MeaningCore=core;
+  if(typeof module!=='undefined')module.exports=core;
+})(typeof window==='undefined'?globalThis:window);
