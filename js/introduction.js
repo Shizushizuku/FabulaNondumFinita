@@ -78,7 +78,7 @@
       callbacks.onCovered?.();
       wait(closing.gap,()=>{
         const reveal=()=>{phase('reveal');wait(closing.reveal,()=>{
-          playing=false;layer.hidden=true;main.inert=previousInert;document.body.classList.remove('intro-playing');
+          playing=false;window.MeaningMusic.endSequence();layer.hidden=true;main.inert=previousInert;document.body.classList.remove('intro-playing');
           callbacks.onFinish?.();callbacks=null;
         });};
         if(callbacks.card)titleCard(reveal);else reveal();
@@ -87,7 +87,7 @@
   }
   function beginPresentation(){
     layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');
-    if(callbacks.skipOpening)finish();else paragraph();
+    if(callbacks.skipOpening)finish();else{window.MeaningMusic.sequence(mode==='conclusion'?'ending':'opening');paragraph();}
     layer.focus({preventScroll:true});
   }
   function renderHelp(){
@@ -122,11 +122,13 @@
   });
   document.addEventListener('keydown',event=>{
     if(!playing||event.ctrlKey||event.metaKey||event.altKey)return;
+    if(event.target===document.getElementById('music-toggle')&&(event.key==='Enter'||event.key===' '))return;
     if(layer.dataset.phase==='help'){
       const prev=document.getElementById('help-prev'),nextButton=document.getElementById('help-next');
-      if(event.key==='Tab'){event.preventDefault();(event.target===nextButton&&!prev.hidden?prev:nextButton).focus();return;}
+      if(event.key==='Tab'){event.preventDefault();const buttons=[...(!prev.hidden?[prev]:[]),nextButton,document.getElementById('music-toggle')];const index=buttons.indexOf(event.target);buttons[(index+(event.shiftKey?-1:1)+buttons.length)%buttons.length].focus();return;}
       if((event.key==='Enter'||event.key===' ')&&(event.target===prev||event.target===nextButton))return;
     }
+    if(event.key==='Tab'){event.preventDefault();const toggle=document.getElementById('music-toggle');(event.target===toggle?layer:toggle).focus();return;}
     if([' ','Spacebar','Enter','Escape','ArrowRight','ArrowLeft','Tab','1','2','h','H'].includes(event.key)){
       event.preventDefault();event.stopImmediatePropagation();
     }

@@ -137,3 +137,10 @@ body.intro-playing{overflow:hidden}
 @keyframes veil-arrive{from{opacity:0}to{opacity:1}}
 @keyframes veil-depart{from{opacity:1}to{opacity:0}}
 @media(prefers-reduced-motion:reduce){.scene-curtain{display:none}.story-choice,.panel-button,.ending-actions button,.back,.tools button,.read-tools button,.help-actions button{transition:none}}
+
+/* Available during the full-screen opening and conclusion as well as gameplay. */
+.music-toggle{position:fixed;z-index:110;top:max(14px,env(safe-area-inset-top));right:max(20px,env(safe-area-inset-right));min-height:36px;padding:7px 12px;border:1px solid #aa92755c;background:#0a0908c9;color:#cbb99f;font-size:11px;line-height:1.4;letter-spacing:.07em;backdrop-filter:blur(6px);transition:color .2s,border-color .2s,background-color .2s}
+.music-toggle[aria-pressed=true]{color:#ead8bb;border-color:#b99b7377}.music-toggle:hover{color:#fff;border-color:#d1b28e}
+.story-heading-actions{padding-top:32px}.vertical{top:75px}
+body:has(.introduction.conclusion:not([hidden])) .music-toggle{background:#f1ebdfd9;color:#66543b;border-color:#8c735e66}
+@media(max-width:700px){.music-toggle{right:max(15px,env(safe-area-inset-right));font-size:10px;min-height:40px;padding:7px 10px}.story-heading-actions{padding-top:35px}.vertical{top:75px}}

@@ -34,7 +34,7 @@
   function stagger(elements){Array.from(elements).slice(0,64).forEach((element,index)=>{
     if(available(element))animate(element,[{opacity:0,translate:'0 5px'},{opacity:1,translate:'0 0'}],220+Math.min(index*7,210));
   });}
-  function guard(event){if(locks){event.preventDefault();event.stopImmediatePropagation();}}
+  function guard(event){if(locks&&event.target?.id!=='music-toggle'){event.preventDefault();event.stopImmediatePropagation();}}
   document.addEventListener('click',guard,true);document.addEventListener('keydown',guard,true);
   window.MeaningMotion=Object.freeze({enter,cover,exit,closeDialog,animate,cancel,stagger,isBusy:()=>locks>0,onIdle:callback=>idle.add(callback)});
 })();

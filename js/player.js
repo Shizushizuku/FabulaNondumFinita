@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const C=window.MeaningCore, S=window.MeaningStory, shell=window.MeaningShell, introduction=window.MeaningIntroduction, motion=window.MeaningMotion, backgrounds=window.MeaningBackgrounds;
+  const C=window.MeaningCore, S=window.MeaningStory, shell=window.MeaningShell, introduction=window.MeaningIntroduction, motion=window.MeaningMotion, backgrounds=window.MeaningBackgrounds, music=window.MeaningMusic;
   const el=id=>document.getElementById(id), copy=C.clone;
   const STORAGE='tomorrow.player.v1';
   let library={version:2,autosave:null,slots:[null,null,null],lastChoices:{},settings:{speed:34,font:22,autoRate:3,lineHeight:1.95}}, storageFailed=false;
@@ -89,7 +89,7 @@
     launchWithIntroduction(()=>{setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});});
   function render(){halt();choiceOpen=false;setModal(false);el('choice-screen').hidden=true;el('ending-screen').hidden=true;el('story').classList.remove('bright-ending');el('theory-note').hidden=true;
     const scene=S.nodes[run.nodeId],page=pageList[pageIndex];if(!page)throw Error('Empty story page '+run.nodeId);
-    backgrounds.switchTo(scene.art);const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);backgrounds.prefetch(nextIds.map(id=>S.nodes[id].art));el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':'';
+    music.scene(run.nodeId);backgrounds.switchTo(scene.art);const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);backgrounds.prefetch(nextIds.map(id=>S.nodes[id].art));el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':'';
     el('chapter-caption').textContent=String(scene.chapter).padStart(2,'0')+' / '+S.chapters[scene.chapter-1];
     el('scene-caption').textContent=scene.title;
     el('reader-name').textContent=page.kind==='dialogue'?page.speaker:S.protagonist;
@@ -143,7 +143,7 @@
     el('ending-kicker').textContent=dead?S.title:S.protagonist;
     const ending=S.endings[dead?'death':'survival'];el('ending-title').textContent=ending.title;el('ending-copy').textContent=ending.text;
     el('retry-choice').hidden=!dead;const target=dead?retryPoint():null;el('retry-choice').textContent=target?'从上一个选择开始 · '+S.nodes[target.point.nodeId].title:'从头重新开始';syncControls();el('reread-story').hidden=dead;el('ending-home').focus();autosave();}
-  function leave(ended=false){autosave();halt();setMode();active=false;syncControls();el('choice-screen').hidden=true;el('ending-screen').hidden=true;shell.showHome();
+  function leave(ended=false){music.duck(false);autosave();halt();setMode();active=false;syncControls();el('choice-screen').hidden=true;el('ending-screen').hidden=true;shell.showHome();
     if(ended){const p=shell.getProgress(),a=Math.max(0,p.achievements.length-(run.initialAchievements||0)),n=Math.max(0,p.visited.length-(run.initialNodes||0));
       openDialog('这一遍，留下了痕迹',`「按章节开始」已可回看本轮到达的节点。新增 ${n} 个节点、${a} 项成就。已到达的节点会保留当时的选择，成就可在开始界面查看。`);}}
   function applySettings(){el('story').style.setProperty('--reader-size',library.settings.font+'px');el('story').style.setProperty('--reader-leading',library.settings.lineHeight);}
@@ -153,8 +153,8 @@
     if(typing&&resumeType&&!textTimer){if(library.settings.speed===0)completeText();else resumeType();}else schedule();
   }
   motion.onIdle(resumeReading);
-  function closePanel(){motion.closeDialog(el('player-dialog'),()=>{panelMode='';syncControls();resumeReading();(returnFocus?.isConnected?returnFocus:el('read-surface')).focus({preventScroll:true});});}
-  function openPanel(mode){halt();setMode();returnFocus=document.activeElement;panelMode=mode;const body=el('player-panel-body');body.replaceChildren();
+  function closePanel(){motion.closeDialog(el('player-dialog'),()=>{music.duck(false);panelMode='';syncControls();resumeReading();(returnFocus?.isConnected?returnFocus:el('read-surface')).focus({preventScroll:true});});}
+  function openPanel(mode){music.duck(true);halt();setMode();returnFocus=document.activeElement;panelMode=mode;const body=el('player-panel-body');body.replaceChildren();
     const titles={pause:'暂时停在这里',save:'保存这一页',load:'重新打开一页',log:'已经读过的文字',settings:'阅读设置'};
     el('player-panel-title').textContent=titles[mode];el('player-panel-close').hidden=false;
     if(mode==='pause'){
@@ -162,6 +162,7 @@
     }else if(mode==='settings'){
       for(const [key,title,min,max] of [['speed','逐字间隔',0,65],['autoRate','自动翻页速度',1,5],['font','正文字号',18,28],['lineHeight','正文行距',1.6,2.6]]){const label=document.createElement('label');label.textContent=title;const input=document.createElement('input');input.type='range';input.min=min;input.max=max;input.step=key==='lineHeight'?'.05':'1';input.value=library.settings[key];
         const format=()=>key==='lineHeight'?Number(input.value).toFixed(2)+' 倍':key==='autoRate'?['慢','较慢','标准','较快','快'][Number(input.value)-1]:key==='speed'?(Number(input.value)===0?'立即显示':input.value+' ms'):input.value+' px';const value=document.createElement('output');value.textContent=format();input.setAttribute('aria-label',title);input.oninput=()=>{library.settings[key]=Number(input.value);value.textContent=format();applySettings();persist();};label.append(input,value);body.append(label);}
+      const soundLabel=document.createElement('label');soundLabel.textContent='音乐音量';const soundInput=document.createElement('input');soundInput.type='range';soundInput.min=0;soundInput.max=100;soundInput.step=1;soundInput.value=Math.round(music.getSettings().volume*100);soundInput.setAttribute('aria-label','音乐音量');const soundValue=document.createElement('output');soundValue.textContent=soundInput.value+'%';soundInput.oninput=()=>{soundValue.textContent=soundInput.value+'%';music.setVolume(Number(soundInput.value)/100);};soundLabel.append(soundInput,soundValue);body.append(soundLabel);
       const p=document.createElement('p');p.className='panel-subtle';p.textContent='自动会显示整页文字并按设定速度翻页，快进会快速推进；两者均在选项处停止。翻页速度控制每页停留时间。空格 / Enter：继续 · Esc：暂停 · 1 / 2：选择 · H：隐藏文字';body.append(p);
     }else if(mode==='log'){
       const area=document.createElement('div');area.className='backlog';if(!log.length){area.textContent='这一页才刚刚展开。';}
@@ -170,7 +171,7 @@
       const p=document.createElement('p');p.className='panel-subtle';p.textContent=mode==='save'?'选择一个位置保存。章节与成就会始终保留。':'自动存档在每一页更新。读取后保留本机已解锁的节点与成就。';body.append(p);
       const rows=mode==='load'?[['自动存档',library.autosave,-1],...library.slots.map((s,i)=>['存档 '+(i+1),s,i])]:library.slots.map((s,i)=>['存档 '+(i+1),s,i]);
       for(const [label,s,index] of rows){const b=panelButton('',()=>{
-        if(mode==='load'){motion.closeDialog(el('player-dialog'),()=>{panelMode='';restore(s);});return;}
+        if(mode==='load'){motion.closeDialog(el('player-dialog'),()=>{music.duck(false);panelMode='';restore(s);});return;}
         const write=()=>{library.slots[index]=snapshot();const saved=persist();openPanel('save');toast(saved?'已保存到存档 '+(index+1):'存档仅在当前页面暂存。');};
         if(s){motion.closeDialog(el('player-dialog'),()=>openDialog('覆盖存档 '+(index+1)+'？','这会替换该位置的阅读进度，已解锁的节点与成就仍会保留。',write));}else write();
       },'save-slot');b.disabled=mode==='load'&&!s;const strong=document.createElement('strong');strong.textContent=label;const span=document.createElement('span');
