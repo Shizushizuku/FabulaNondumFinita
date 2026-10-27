@@ -62,11 +62,12 @@
   function restoreSave(save){if(!validSave(save)){toast('这份存档无法读取。');return;}run=copy(save.run);log=copy(save.log);pendingUnlocks=[];
     pageList=C.pages(run.nodeId,run.flags,run.name,S,run.incoming);
     const updated=save.readingVersion!==S.readingVersion;
+    if(updated)log=[];
     const found=pageList.findIndex(p=>p.key===save.pageKey);
     pageIndex=updated?0:found>=0?found:Math.min(save.pageIndex,pageList.length-1);
     pageLogged=!!log.some(l=>l.key===run.nodeId+'|'+pageList[pageIndex].key);
-    shell.visit(run.nodeId,copy(run));setMode();showPlayer();render();if(save.awaitingChoice){completeText();showChoices(C.options(run.nodeId,run.flags,S.nodes));}else el('read-surface').focus({preventScroll:true});
-    if(updated)toast('文字分页已更新，已回到当前场景开头；你的选择和成就仍保留。');}
+    shell.visit(run.nodeId,copy(run));setMode();showPlayer();render();if(save.awaitingChoice&&!updated){completeText();showChoices(C.options(run.nodeId,run.flags,S.nodes));}else el('read-surface').focus({preventScroll:true});
+    if(updated)toast('文案已更新，已回到当前场景开头；你的选择和成就仍保留。');}
   function playIntroduction(launch,options={}){
     if(introduction.isPlaying())return;
     halt();setMode();let resumeActive=active;active=false;syncControls();
@@ -89,7 +90,11 @@
     launchWithIntroduction(()=>{setMode();pendingUnlocks=[];run=copy(state);run.nodeId=nodeId;log=[];beginEntry(nodeId,run.incoming);});});
   function render(){halt();choiceOpen=false;setModal(false);el('choice-screen').hidden=true;el('ending-screen').hidden=true;el('story').classList.remove('bright-ending');el('theory-note').hidden=true;
     const scene=S.nodes[run.nodeId],page=pageList[pageIndex];if(!page)throw Error('Empty story page '+run.nodeId);
-    music.scene(run.nodeId,run.flags);backgrounds.switchTo(scene.art);const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);backgrounds.prefetch(nextIds.map(id=>S.nodes[id].art));el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':'';
+    const art=page.art||scene.art;
+    music.scene(run.nodeId,run.flags);backgrounds.switchTo(art);
+    const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);
+    backgrounds.prefetch([...new Set([...pageList.slice(pageIndex+1).map(p=>p.art).filter(a=>a&&a!==art),...nextIds.map(id=>S.nodes[id].art)])]);
+    el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':art==='sunset-open-sky'?'sunset':'';
     el('chapter-caption').textContent=String(scene.chapter).padStart(2,'0')+' / '+S.chapters[scene.chapter-1];
     el('scene-caption').textContent=scene.title;
     el('reader-name').textContent=page.kind==='dialogue'?page.speaker:S.protagonist;

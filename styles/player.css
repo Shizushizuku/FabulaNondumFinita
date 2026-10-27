@@ -29,6 +29,7 @@
 .hide-text .text-window,.hide-text .read-footer,.hide-text .story-heading{opacity:0;pointer-events:none}.hide-text #read-surface:after{content:'点击恢复文字';position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:10px;color:#c9b9a8;letter-spacing:.16em}.hide-text #read-surface{z-index:4}
 body:has(#story:not([hidden]))>.scene,body:has(#story:not([hidden]))>.grain{display:none}body:has(#story:not([hidden])){overflow:hidden}
 #story[data-mood=death] .story-scenery{filter:saturate(.3)}#story[data-mood=fire] .story-scenery{animation:ember-glow 7s ease-in-out infinite}
+#story[data-mood=sunset] .story-scenery img{filter:saturate(.95) brightness(1)}
 body:has(#player-dialog[open]) #story .story-scenery img{animation-play-state:paused}
 @keyframes slow-breath{from{transform:scale(1.015) translateX(-.2%)}to{transform:scale(1.05) translateX(.2%)}}@keyframes waiting{0%,100%{opacity:.2}50%{opacity:1}}@keyframes toast-in{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}@keyframes ember-glow{0%,100%{opacity:.82}50%{opacity:1}}
 @media(min-width:1500px){.text-window{left:calc((100vw - 1360px)/2);right:calc((100vw - 1360px)/2);padding:29px 39px 49px;min-height:250px}.story-copy{line-height:2.1}}

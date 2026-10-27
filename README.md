@@ -19,6 +19,8 @@
 
 本稿使用独立的本机记录空间；进入网页后从新稿序章开始。前一个剧本的存档与阅读日志不会载入本稿。
 
+本轮剧情校对、人物首次介绍和前情衔接详见 `content/剧情校对记录.md`。晚霞分支扩写为一次完整的驻足观看，先显示原图，再渐变到 `assets/sunset-open-sky.png`；留在铺上的路线不会显示晚霞图。正文修改后，旧版本存档会从当前场景开头继续，保留选择与成就、清除旧回看文本。
+
 ## 编辑与检查
 
 `js/story-data.js` 是随网页发布的编译数据；修改文案或对白标记后执行：
@@ -27,6 +29,7 @@
 python3 tools/compile_story.py
 node tools/verify-routes.cjs
 node tools/verify-reading.cjs
+node tools/verify-narrative.cjs
 node tools/verify-player.cjs
 node tools/verify-timing.cjs
 node tools/verify-retry.cjs
@@ -41,7 +44,7 @@ node tools/verify-music.cjs
 
 `js/introduction.js` 管理开场白与生还结语的时序、配色和首次观看记录，`js/core.js` 管理条件和分页，`js/player.js` 管理阅读与存档，`js/shell.js` 管理开始界面、流程图和成就。样式位于 `styles/`，原有插画及生成说明保留在 `assets/`。
 
-验证覆盖 413 条完整路径、全部 216 段稿件内容、条件文字、笑话原话回放、存读档、章节回跳、五条死亡线的关键选择回退、选项保护、自动播放到选项、逐句手动停顿，以及开场白的首次播放、回顾和阅读位置恢复。控制逻辑通过模拟 DOM 验证。浏览器工具访问策略阻止了本机预览，本轮未进行实际浏览器及手机布局验收。
+验证覆盖 413 条完整路径、全部 226 段稿件内容、条件文字、笑话原话回放、存读档、章节回跳、五条死亡线的关键选择回退、选项保护、自动播放到选项、逐句手动停顿，以及开场白的首次播放、回顾和阅读位置恢复。控制逻辑通过模拟 DOM 验证。浏览器工具访问策略阻止了本机预览，本轮未进行实际浏览器及手机布局验收。
 
 ## 字体
 
