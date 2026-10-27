@@ -1,0 +1,44 @@
+# 尚未结束
+
+在浏览器里打开本文件夹的 **index.html** 即可游玩。页面每次打开先回到开始界面，已有进度可从「继续上次阅读」恢复。网页与图片都在本文件夹内，无需安装依赖。
+
+本版接续原来的开始界面，正文来自上一级目录的 `生命的意义_互动文案_一万字.md`。
+
+## 已完成
+
+- 8 幕正文、61 个流程图节点、5 个死亡结局及生还后的两条任务去向。
+- 保留全部叙事、条件文字、31 段过渡，以及改诗／复述、演出／重逢、记录／分享／烧纸等延迟影响。
+- 第一人称逐字阅读、点击继续、等待符号、变暗的选择界面、自动、快进、暂停、回看。
+- 输入名字，3 个手动存档和逐页自动存档。名字、存档、节点和成就只保存在当前浏览器。
+- 从流程图节点恢复当时的选择；重新开始保留累计解锁；结局回到开始界面后显示本轮新增记录。
+- 12 项成就、解锁提示、独立页边笺和粉色已解锁卡片。
+- 字号／文字速度设置、手机布局、减少动态效果支持。小屏长文可滚动，底部六个按钮保留触控高度，并处理动态视口与屏幕安全区。
+
+空格或 Enter 继续；Esc 暂停；1 / 2 选择；H 隐藏／恢复正文。快进与自动在选择处停下。
+
+## 美术
+
+通过内置 **image_gen** 生成剧情背景，以原有封面及毒气室图片作为风格参考。沿用暗灰、灰褐、极少铜色与暗红，斜向刮擦笔触、颗粒、模糊边缘和倾斜透视。
+
+新增原图保存在 `assets/`：押运车 `train.png`、营房 `barracks.png`、冻土工地 `worksite.png`、病区 `ward.png`、晚霞 `sunset.png`、纸片与炉火 `paper.png`、树林 `forest.png`、获释后的房间 `freedom.png`。完整英文提示词与生成方式保存在 [story-art-prompts.json](assets/story-art-prompts.json)。原有图片保留。
+
+按原 prompt 查阅了 [《寒蝉》原作介绍](https://07th-expansion.net/hig_gensaku)、[Origin 官方页面](https://www.entergram.co.jp/higurashihou/origin.html)和[《水仙》制作组页面](https://stage-nana.sakura.ne.jp/narcissu.htm)。美术制作以文件夹中已确认的图片为主要依据，未直接使用参考游戏素材。
+
+## 后续编辑
+
+`styles/` 存放样式，`js/shell.js` 管理开始界面与记录，`js/player.js` 管理阅读与存档，`js/core.js` 管理分支规则。`js/story-data.js` 从原稿编译，修改剧本后可在上级文件夹运行：
+
+```sh
+python3 start-screen/tools/compile_story.py
+node start-screen/tools/verify-routes.cjs
+node start-screen/tools/verify-player.cjs
+node start-screen/tools/verify-timing.cjs
+```
+
+原开始界面备份在 `.backup/index.before-story.html`；旧演示网页与原稿均未修改。
+
+## 验证范围
+
+413 条完整选择路径、61 个节点、12 项成就通过分支检查；存档／读取、章节回跳、死亡后重选和生还返回通过无浏览器的控制逻辑测试。全部 405 行叙事和 31 段过渡已核对保留，脚本语法和资源引用检查通过。
+
+浏览器工具的访问策略拦截了本机预览，因此未完成实际浏览器点击与桌面／手机布局验收。新增背景图已逐张查看。
