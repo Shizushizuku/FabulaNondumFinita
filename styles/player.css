@@ -84,6 +84,12 @@ body.intro-playing{overflow:hidden}
 @media(max-height:500px){.intro-stage{padding-top:22px;padding-bottom:22px}.intro-copy{font-size:17px;line-height:1.8;max-width:48em}}
 
 /* Survival moves gradually from the camp's darkness into warm daylight. */
+.introduction.conclusion[data-phase=entry-fade]{background:transparent}
+.introduction.conclusion[data-phase=entry-fade] .intro-blackout{background:#000;animation:intro-in var(--conclusion-entry-in) ease-in both}
+.introduction.conclusion[data-phase=entry-hold]{background:#000}
+.introduction.conclusion[data-phase=entry-hold] .intro-blackout{background:#000;opacity:1}
+.introduction.conclusion[data-phase=entry-reveal] .intro-blackout{background:#000;animation:intro-out var(--conclusion-entry-out) ease-out both}
+body:has(.introduction[data-phase^="entry-"]:not([hidden])) .music-toggle{visibility:hidden}
 .intro-daylight{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;background:#f1ebdf;transition:opacity var(--intro-in) ease-in-out}
 .intro-stage{z-index:1}.intro-blackout{z-index:2}
 .introduction.conclusion .intro-daylight{opacity:var(--daylight,0)}

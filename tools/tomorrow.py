@@ -71,7 +71,18 @@ for key,node in nodes.items():
     node['paragraphs']=[]
     node['end']='death' if '死亡支线' in node.pop('reference') else 'survival' if key=='22' else None
     active_art=None
+    active_music=None
     for i,block in enumerate(paragraphs):
+        cue=re.fullmatch(r'〔配乐：([a-z0-9-]+)〕',block)
+        if cue:
+            active_music=cue[1]
+            assert active_music in {'opening','ending','sunset','snow','tension','calm1','calm2','calm3'},(key,active_music)
+            continue
+        cause=re.fullmatch(r'〔死因：(.+)〕',block)
+        if cause:
+            assert node['end']=='death' and 'deathCause' not in node,(key,'Unexpected death cause')
+            node['deathCause']=cause[1]
+            continue
         picture=re.fullmatch(r'〔画面：([a-z0-9-]+)〕',block)
         if picture:
             active_art=picture[1]
@@ -96,9 +107,9 @@ for key,node in nodes.items():
             continue
         coverage.append({'node':key,'paragraph':i,'text':block})
         if block.startswith('**') and block.endswith('**'):
-            node['paragraphs'].append({'kind':'caption','text':block[2:-2],'key':f'{key}:p{i}'})
+            node['paragraphs'].append({'kind':'caption','text':block[2:-2],'key':f'{key}:p{i}',**({'music':active_music} if active_music else {})})
         else:
-            node['paragraphs'].extend(dict(p,**({'art':active_art} if active_art else {})) for p in annotate(key,i,block,condition))
+            node['paragraphs'].extend(dict(p,**({'art':active_art} if active_art else {}),**({'music':active_music} if active_music else {})) for p in annotate(key,i,block,condition))
     if key in automatic:node['routes']=[{'when':when,'to':to} for when,to in automatic[key]]
     if key in flags:
         flag,values=flags[key]
@@ -107,6 +118,7 @@ for key,node in nodes.items():
             if flag:option['set']={flag:value}
     for anchor in SPEECH.get(key,{}):
         assert sum(anchor in quote for quote in re.findall('“([^”]*)”',raw))==1,(key,anchor)
+    if node['end']=='death':assert node.get('deathCause'),(key,'Missing death cause')
 
 jokes={}
 for kind,node_id,indices in [('poem','11A',[0]),('surgery','11B',[0,2])]:
@@ -137,7 +149,7 @@ for key,node in nodes.items():
 reflection=re.split(r'\n\s*\n',(ROOT/'content/结语.md').read_text().strip())
 finale=re.split(r'\n\s*\n',(ROOT/'content/结语_尾声.md').read_text().strip())
 data={
- 'id':'tomorrow-20261027','title':'留待明日','protagonist':'维克多·弗兰克尔','start':'00','readingVersion':4,
+ 'id':'tomorrow-20261027','title':'留待明日','protagonist':'维克多·弗兰克尔','start':'00','readingVersion':6,
  'source':{'file':'content/游戏文案_留待明日.md','sha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest()},
  'conclusion':reflection+finale,'conclusionFinaleAt':len(reflection),
  'introduction':re.split(r'\n\s*\n',(ROOT/'content/开场白.md').read_text().strip()),

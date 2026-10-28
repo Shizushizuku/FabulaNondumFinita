@@ -92,11 +92,18 @@
   }
   function updateContinue(){el('continue-story').hidden=!library.autosave;}
   function showPlayer(){shell.show('story');active=true;el('read-surface').focus({preventScroll:true});}
-  function beginEntry(id,incoming=null,atChoice=false){halt();el('story').classList.remove('hide-text');run.nodeId=id;run.incoming=incoming;pageIndex=0;pageLogged=false;choiceOpen=false;
+  function beginEntry(id,incoming=null,atChoice=false){
+    const enter=()=>commitEntry(id,incoming,atChoice);
+    if(active&&run.nodeId!==id&&!introduction.isPlaying()){halt();motion.cover(enter,120);}else enter();
+  }
+  function commitEntry(id,incoming=null,atChoice=false){halt();el('story').classList.remove('hide-text');run.nodeId=id;run.incoming=incoming;pageIndex=0;pageLogged=false;choiceOpen=false;
     shell.visit(id,copy(run));pageList=C.pages(id,run.flags,run.name,S,incoming);if(!pageList.length){const to=C.next(id,run.flags,S.nodes);if(!to)throw Error('Empty routing scene '+id);beginEntry(to,id);return;}if(atChoice)pageIndex=pageList.length-1;showPlayer();render();if(S.nodes[incoming]?.options.length)unlockNotes();if(atChoice){completeText();showChoices(C.options(id,run.flags,S.nodes));}else el('read-surface').focus({preventScroll:true});}
   function beginNewRun(){const p=shell.getProgress();pendingUnlocks=[];log=[];run={version:2,storyId:S.id,nodeId:S.start,incoming:null,flags:{},name:S.protagonist,choices:[],initialNodes:p.visited.length,initialAchievements:p.achievements.length};
     setMode();beginEntry(S.start);}
-  function restoreSave(save){if(!validSave(save)){toast('这份存档无法读取。');return;}run=copy(save.run);log=copy(save.log);pendingUnlocks=[];
+  function restoreSave(save){if(!validSave(save)){toast('这份存档无法读取。');return;}el('story').classList.remove('hide-text');run=copy(save.run);log=copy(save.log).map(entry=>{
+    const speech=typeof entry.text==='string'&&entry.text.match(/^([^：“”\n]+)：“([\s\S]*)”$/);
+    return speech?{...entry,speaker:speech[1],text:'“'+speech[2]+'”'}:entry;
+  });pendingUnlocks=[];
     pageList=C.pages(run.nodeId,run.flags,run.name,S,run.incoming);
     const updated=save.readingVersion!==S.readingVersion;
     if(updated)log=[];
@@ -128,13 +135,14 @@
   function render(){halt();captionState=null;choiceOpen=false;setModal(false);el('choice-screen').hidden=true;el('ending-screen').hidden=true;el('story').classList.remove('bright-ending','caption-paused');el('theory-note').hidden=true;
     const scene=S.nodes[run.nodeId],page=pageList[pageIndex];if(!page)throw Error('Empty story page '+run.nodeId);
     const art=page.art||scene.art;
-    music.scene(run.nodeId,run.flags);backgrounds.switchTo(art);
+    music.scene(run.nodeId,run.flags,page.music);backgrounds.switchTo(art);
     const nextIds=[scene.next,...scene.options.map(o=>o.to),...scene.routes.map(r=>r.to)].filter(Boolean);
     backgrounds.prefetch([...new Set([...pageList.slice(pageIndex+1).map(p=>p.art).filter(a=>a&&a!==art),...nextIds.map(id=>S.nodes[id].art)])]);
     el('story').dataset.mood=scene.end==='death'?'death':run.nodeId==='17A'?'fire':art==='sunset-open-sky'?'sunset':'';
     el('chapter-caption').textContent=String(scene.chapter).padStart(2,'0')+' '+S.chapters[scene.chapter-1];
     el('scene-caption').textContent=scene.title;
-    el('reader-name').textContent=page.kind==='dialogue'?page.speaker:S.protagonist;
+    const speaker=page.kind==='dialogue'?([S.protagonist,run.name].includes(page.speaker)?'我':page.speaker):'';
+    el('reader-name').textContent=speaker;el('reader-name').hidden=!speaker;
     el('story').dataset.readingKind=page.kind;
     updateRecall();
     syncControls();
@@ -155,11 +163,16 @@
       if(visible>=chars.length){finishText();return;}const char=chars[visible-1];textTimer=setTimeout(tick,library.settings.speed*(/[。！？]/.test(char)?5:/[，；：]/.test(char)?2:1));};resumeType=tick;tick();}
     autosave();}
   function finishText(){clearTimeout(textTimer);resumeType=null;typing=false;el('continue-mark').hidden=pageList[pageIndex].kind==='caption';el('reader-hint').textContent=auto?'自动阅读中 · 到选项时停止':pageList[pageIndex].kind==='dialogue'?'点击或空格，继续下一句':'点击或空格，继续';
-    if(!pageLogged){const page=pageList[pageIndex];log.push({key:run.nodeId+'|'+page.key,chapter:S.chapters[S.nodes[run.nodeId].chapter-1],text:page.text});pageLogged=true;}
+    if(!pageLogged){const page=pageList[pageIndex];log.push({key:run.nodeId+'|'+page.key,chapter:S.chapters[S.nodes[run.nodeId].chapter-1],speaker:page.kind==='dialogue'?page.speaker:null,text:page.text});pageLogged=true;}
     if(pageIndex===pageList.length-1)unlockNotes();autosave();schedule();}
   function completeText(){const page=pageList[pageIndex];(page.kind==='caption'?el('bulletin-copy'):el('story-copy')).textContent=page.text;visible=chars.length;finishText();}
   function advance(){if(captionState||motion.isBusy()||!active||el('player-dialog').open||choiceOpen||!el('ending-screen').hidden)return;if(el('story').classList.contains('hide-text')){el('story').classList.remove('hide-text');return;}if(typing){completeText();return;}halt();
-    if(pageIndex<pageList.length-1){pageIndex++;pageLogged=false;render();return;}unlockNotes();const scene=S.nodes[run.nodeId];
+    if(pageIndex<pageList.length-1){
+      const current=pageList[pageIndex],next=pageList[pageIndex+1];
+      const showNext=()=>{pageIndex++;pageLogged=false;render();};
+      if(current.art!==next.art||next.kind==='caption')motion.cover(showNext,120);else showNext();
+      return;
+    }unlockNotes();const scene=S.nodes[run.nodeId];
     if(scene.end){showEnding();return;}const options=C.options(run.nodeId,run.flags,S.nodes);if(options.length){showChoices(options);return;}
     const to=C.next(run.nodeId,run.flags,S.nodes);if(!to){toast('此处暂时无法继续，请读取存档。');return;}beginEntry(to,run.nodeId);}
   function setModal(value){el('read-surface').inert=value;document.querySelector('.read-footer').inert=value;}
@@ -190,7 +203,7 @@
   }
   function revealEnding(){halt();setMode();setModal(true);const dead=S.nodes[run.nodeId].end==='death';el('ending-screen').hidden=false;motion.enter(el('ending-screen'),'scene');el('story').classList.toggle('bright-ending',!dead);
     el('ending-kicker').textContent=dead?S.title:S.protagonist;
-    const ending=S.endings[dead?'death':'survival'];el('ending-title').textContent=ending.title;el('ending-copy').textContent=ending.text;
+    const ending=S.endings[dead?'death':'survival'];el('ending-title').textContent=ending.title;el('ending-copy').textContent=ending.text+(dead?'\n\n死因：'+S.nodes[run.nodeId].deathCause:'');
     el('retry-choice').hidden=!dead;const target=dead?retryPoint():null;el('retry-choice').textContent=target?'从上一个选择开始 · '+S.nodes[target.point.nodeId].title:'从头重新开始';syncControls();el('reread-story').hidden=dead;el('ending-home').focus();autosave();}
   function leave(ended=false){active=false;panelMode='';music.duck(false);autosave();halt();setMode();syncControls();el('choice-screen').hidden=true;el('ending-screen').hidden=true;shell.showHome();
     if(ended){const p=shell.getProgress(),a=Math.max(0,p.achievements.length-(run.initialAchievements||0)),n=Math.max(0,p.visited.length-(run.initialNodes||0));
@@ -215,7 +228,7 @@
       const p=document.createElement('p');p.className='panel-subtle';p.textContent='自动会显示整页文字并按设定速度翻页，快进会快速推进；两者均在选项处停止。翻页速度控制每页停留时间。空格 / Enter：继续 · Esc：暂停 · 1 / 2：选择 · H：隐藏文字';body.append(p);
     }else if(mode==='log'){
       const area=document.createElement('div');area.className='backlog';if(!log.length){area.textContent='这一页才刚刚展开。';}
-      log.forEach(l=>{const article=document.createElement('article'),small=document.createElement('small'),p=document.createElement('p');small.textContent=l.chapter;p.textContent=(l.choice?'→ ':'')+l.text;article.classList.toggle('log-choice',!!l.choice);article.append(small,p);area.append(article);});body.append(area);requestAnimationFrame(()=>area.scrollTop=area.scrollHeight);
+      log.forEach(l=>{const article=document.createElement('article'),small=document.createElement('small'),p=document.createElement('p');small.textContent=l.chapter+(l.speaker?' · '+l.speaker:'');p.textContent=(l.choice?'→ ':'')+l.text;article.classList.toggle('log-choice',!!l.choice);article.append(small,p);area.append(article);});body.append(area);requestAnimationFrame(()=>area.scrollTop=area.scrollHeight);
     }else{
       const p=document.createElement('p');p.className='panel-subtle';p.textContent=mode==='save'?'选择一个位置保存。章节与成就会始终保留。':'自动存档在每一页更新。读取后保留本机已解锁的节点与成就。';body.append(p);
       const rows=mode==='load'?[['自动存档',library.autosave,-1],...library.slots.map((s,i)=>['存档 '+(i+1),s,i])]:library.slots.map((s,i)=>['存档 '+(i+1),s,i]);
@@ -235,7 +248,7 @@
   el('player-panel-close').onclick=closePanel;el('player-dialog').addEventListener('cancel',e=>{e.preventDefault();closePanel();});
   el('retry-choice').onclick=retry;el('reread-story').onclick=()=>startNew();el('ending-home').onclick=()=>leave(true);
   el('continue-story').onclick=()=>restore(library.autosave);el('theory-note').onclick=()=>{halt();setMode();const id=S.nodes[run.nodeId].notes[0];openDialog(ACH_NAMES[Number(id.slice(1))],DATA.notes[id]);};
-  el('dialog').addEventListener('close',()=>{if(active&&!el('player-dialog').open){el('read-surface').focus();if(typing&&resumeType)resumeType();else schedule();}});
+  el('dialog').addEventListener('close',()=>{if(active&&!el('player-dialog').open){panelMode='';music.duck(false);syncControls();el('read-surface').focus();resumeReading();}});
   document.addEventListener('keydown',e=>{
     if(!active||e.ctrlKey||e.metaKey||e.altKey||el('dialog').open)return;
     if(el('player-dialog').open)return;

@@ -9,6 +9,8 @@ for(let steps=0;!context.window.MeaningIntroduction.isPlaying();steps++){
  if(!el('choice-screen').hidden)el('choice-buttons').children[plan[saved().run.nodeId]??0].onclick();else advance();
 }
 assert.equal(saved().run.nodeId,'22');assert(el('introduction').classList.contains('conclusion'));assert.equal(el('introduction').attributes['aria-label'],'结语');
+assert.equal(el('introduction').dataset.phase,'entry-fade');assert.equal(el('intro-copy').textContent,'','conclusion text waits for the long transition');
+while(el('introduction').dataset.phase.startsWith('entry-'))t.tickNext();
 assert.equal(el('intro-copy').textContent,expected[0]);assert(el('game-main').inert);assert(key(' ').prevented);
 const before=saved(),introFlag=mem.get('tomorrow.introduction.v1'),shown=[],brightness=[],phases=[];
 const activeTimers=timers.size;visibility(true);assert.equal(timers.size,activeTimers-1,'sequence timer pauses');visibility(false);
@@ -37,9 +39,15 @@ console.log('Conclusion passed: exact sixteen paragraphs after survival and a si
 
 // Black, gradual brightening and a full-white hold all precede the first new paragraph.
 const animated=createEnv(false,{version:2,autosave:survived,slots:[null,null,null]},true);
-animated.click('continue-story');animated.advance();animated.advance();let reflectionEnd=null,finaleStart=null;const closingHolds=[],transitionStages=[];
+animated.click('continue-story');animated.advance();animated.advance();let reflectionStart=null,reflectionEnd=null,finaleStart=null;const closingHolds=[],transitionStages=[],entryStages=[];
 for(let i=0;animated.context.window.MeaningIntroduction.isPlaying();i++){
- assert(i<200);const [id,timer]=animated.timers.entries().next().value;
+ assert(i<200);const [id,timer]=[...animated.timers.entries()].sort((a,b)=>a[1].due-b[1].due)[0];
+ if(animated.el('introduction').dataset.phase.startsWith('entry-')){
+  const phase=animated.el('introduction').dataset.phase;
+  if(entryStages.at(-1)?.[0]!==phase)entryStages.push([phase,animated.now()]);
+  assert.equal(animated.el('intro-copy').textContent,'');
+ }
+ if(animated.el('introduction').dataset.paragraph==='1'&&reflectionStart===null)reflectionStart=animated.now();
  if(animated.el('introduction').dataset.phase==='threshold'){
   if(reflectionEnd===null)reflectionEnd=animated.now();
   transitionStages.push([animated.el('introduction').dataset.transition,timer.ms]);
@@ -50,7 +58,14 @@ for(let i=0;animated.context.window.MeaningIntroduction.isPlaying();i++){
  animated.tickNext();
 }
 assert.deepEqual(transitionStages,[['black',160],['rise',1800],['white',200]]);
-assert.equal(reflectionEnd,60000,'first 12 paragraphs including fades and gaps');assert.equal(finaleStart,62160,'finale starts after the light transition');assert.equal(animated.now()-finaleStart,27400,'25-second finale plus a separate end card');assert.equal(animated.now(),89560);assert.equal(closingHolds.length,3);assert(closingHolds[0]<closingHolds[1]&&closingHolds[1]<closingHolds[2]);
+assert.deepEqual(entryStages.map(([phase,start],i)=>[phase,(entryStages[i+1]?.[1]??reflectionStart)-start]),[['entry-fade',1500],['entry-hold',2000],['entry-reveal',500]]);assert.equal(reflectionStart,4000);
+assert.equal(reflectionEnd-reflectionStart,60000,'first 12 paragraphs including fades and gaps');assert.equal(finaleStart,66160,'finale starts after the entry and light transitions');assert.equal(animated.now()-finaleStart,27400,'25-second finale plus a separate end card');assert.equal(animated.now(),93560);assert.equal(closingHolds.length,3);assert(closingHolds[0]<closingHolds[1]&&closingHolds[1]<closingHolds[2]);
+// The long ending transition pauses with the tab and cannot reveal text early.
+const entryPause=createEnv(false);entryPause.context.window.MeaningIntroduction.playConclusion({});entryPause.elapse(750);entryPause.visibility(true);entryPause.elapse(5000);
+assert.equal(entryPause.el('introduction').dataset.phase,'entry-fade');entryPause.visibility(false);entryPause.elapse(749);assert.equal(entryPause.el('intro-copy').textContent,'');
+entryPause.elapse(1);assert.equal(entryPause.el('introduction').dataset.phase,'entry-hold');entryPause.elapse(1999);assert.equal(entryPause.el('intro-copy').textContent,'');
+entryPause.elapse(1);assert.equal(entryPause.el('introduction').dataset.phase,'entry-reveal');entryPause.elapse(499);assert.equal(entryPause.el('intro-copy').textContent,'');
+entryPause.elapse(1);assert.equal(entryPause.el('intro-copy').textContent,expected[0]);
 // Hiding the tab during either the blackout or the brightening preserves remaining time.
 const paused=createEnv(false);paused.context.window.MeaningIntroduction.playConclusion({});
 while(paused.el('introduction').dataset.phase!=='threshold')paused.tickNext();

@@ -3,7 +3,7 @@ process.chdir(require('path').resolve(__dirname,'..'));
 const context={window:{}};vm.runInNewContext(fs.readFileSync('js/story-data.js','utf8'),context);
 const S=context.window.MeaningStory,C=require('../js/core.js');
 const text=fs.readFileSync(S.source.file,'utf8');assert.equal(S.source.sha256,crypto.createHash('sha256').update(text).digest('hex'));
-assert.equal(S.coverage.length,226);
+assert.equal(S.coverage.length,227);
 for(const block of S.coverage){assert(text.includes(block.text));
  const paragraphs=S.nodes[block.node].paragraphs.filter(p=>p.key.startsWith(block.node+':p'+block.paragraph+':')||p.key===block.node+':p'+block.paragraph);
  assert(paragraphs.length,JSON.stringify(block));
@@ -15,7 +15,8 @@ for(const block of S.coverage){assert(text.includes(block.text));
 const pages=(id,flags)=>C.pages(id,flags,S.protagonist,S), joined=(id,flags)=>pages(id,flags).map(p=>p.text).join('');
 for(const joke of ['poem','surgery']){
  const replay=pages('13A',{joke}).filter(p=>p.kind==='dialogue');
- assert.deepEqual(replay.map(p=>p.text),S.jokes[joke].map(p=>'我：“'+p.text+'”'));
+ assert.deepEqual(replay.map(p=>p.text),S.jokes[joke].map(p=>'“'+p.text+'”'));
+ assert(replay.every(p=>p.speaker==='我'));
  assert(replay.every(p=>p.waitForClick));assert(!replay.some(p=>p.text.includes('你可别当着')));
 }
 assert(joined('13A',{joke:'surgery'}).includes('病人的肚子是不是也得敞着'));

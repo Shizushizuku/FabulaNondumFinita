@@ -16,11 +16,15 @@
     if(fast||!element||element.hidden)return;
     const lifted=kind!=='text';animate(element,[{opacity:0,filter:'blur(2px)',...(lifted?{translate:'0 6px'}:{})},{opacity:1,filter:'blur(0)',...(lifted?{translate:'0 0'}:{})}],kind==='text'?160:kind==='scene'?420:260);
   }
-  function cover(change){
+  function cover(change,hold=0){
     if(!available(curtain)||window.MeaningIntroduction?.isPlaying()){change();return;}
     if(locks){if(covered)change();return;}locks++;curtain.hidden=false;
     animate(curtain,[{opacity:0},{opacity:1}],220,()=>{
-      covered=true;try{change();}finally{covered=false;animate(curtain,[{opacity:1},{opacity:0}],340,()=>{curtain.hidden=true;release();});}
+      covered=true;try{change();}finally{
+        covered=false;
+        const reveal=()=>animate(curtain,[{opacity:1},{opacity:0}],340,()=>{curtain.hidden=true;release();});
+        if(hold>0)setTimeout(reveal,hold);else reveal();
+      }
     });
   }
   function exit(element,change,duration=150){

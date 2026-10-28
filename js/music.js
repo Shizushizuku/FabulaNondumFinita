@@ -4,7 +4,7 @@
   const data=window.MeaningMusicData,button=document.getElementById('music-toggle'),KEY='tomorrow.audio.v1';
   let settings={enabled:true,volume:.35};try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)settings={enabled:saved.enabled!==false,volume:Math.max(0,Math.min(1,Number(saved.volume)||0))};}catch{}
   let context=null,master=null,decks=[],unlocked=false,blocked=false,failed=false,hidden=false,ducked=false;
-  let view='home',scene=null,sceneFlags={},sequence=null,desired=null,version=0,active=null,pending=null;
+  let view='home',scene=null,sceneFlags={},sceneMusic=null,sequence=null,desired=null,version=0,active=null,pending=null;
   const positions=new Map();
   const now=()=>context?context.currentTime*1000:Date.now();
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings));}catch{}}
@@ -55,6 +55,7 @@
   function chosen(){
     if(sequence)return sequence==='opening'?'opening':'ending';
     if(view!=='story'||!scene)return null;
+    if(sceneMusic)return sceneMusic;
     const rule=data.sceneRules?.[scene];return rule?(sceneFlags[rule.flag]?rule.yes:rule.no):data.scenes[scene];
   }
   function silence(){
@@ -114,7 +115,7 @@
     else if(unlocked&&settings.enabled)unlock();
   });
   window.MeaningMusic=Object.freeze({
-    scene(id,flags={}){scene=id;sceneFlags=flags;select();},view(id){view=id;select();},
+    scene(id,flags={},cue=null){scene=id;sceneFlags=flags;sceneMusic=Object.hasOwn(data.tracks,cue)?cue:null;select();},view(id){view=id;select();},
     sequence(kind){sequence=kind;select();},endSequence(){sequence=null;select();},
     duck(value){ducked=value;applyVolume();},
     getSettings:()=>({...settings}),setVolume(value){settings.volume=Math.max(0,Math.min(1,value));persist();applyVolume();},setEnabled,

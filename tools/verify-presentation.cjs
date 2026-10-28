@@ -27,11 +27,11 @@ assert.equal(hint.el('story').dataset.readingKind,'dialogue');
 assert(hint.animations.some(a=>a.element===hint.el('intro-recall')&&a.frames[0].translate==='70px 0'));
 for(let n=0;n<3;n++){
  const previous=hint.saved().pageKey;
- for(let steps=0;hint.saved().pageKey===previous;steps++){assert(steps<5);hint.advance();}
+ for(let steps=0;hint.saved().pageKey===previous;steps++){assert(steps<100);if(hint.context.window.MeaningMotion.isBusy())hint.tickNext();else hint.advance();}
  assert(!hint.el('intro-recall').hidden);
 }
 const previous=hint.saved().pageKey;
-for(let steps=0;hint.saved().pageKey===previous;steps++){assert(steps<5);hint.advance();}
+for(let steps=0;hint.saved().pageKey===previous;steps++){assert(steps<100);if(hint.context.window.MeaningMotion.isBusy())hint.tickNext();else hint.advance();}
 assert(hint.el('intro-recall').classList.contains('is-leaving'));
 hint.elapse(340);assert(hint.el('intro-recall').hidden);
 assert(hint.animations.some(a=>a.element===hint.el('intro-recall')&&a.frames.at(-1).translate==='70px 0'));

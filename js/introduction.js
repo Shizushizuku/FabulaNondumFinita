@@ -6,13 +6,14 @@
     {title:'按自己的节奏阅读',text:'右下角可以开启自动播放或快进。\n在「暂停 → 阅读设置」里，可调整字号、行距和播放速度。'},
     {title:'随时停下，也能接着走',text:'阅读时可以随时暂停、保存进度。\n之后从主页「继续」恢复，或在「流程图」中回到已解锁的节点。\n选择「从头开始」可重新游玩，已解锁的节点和成就仍会保留。\n进度保存在当前浏览器。'},
     {title:'失败后，再试一次',text:'如果选错或未能生还，点击「从上一个选择开始」重新尝试。\n会回到影响这次结局的关键选择，之后的选择可以重做。'},
-    {title:'愿你有所收获',text:'预计游玩约十分钟，选择不会被评分。\n故事并不难，请尽量尝试抵达最终结局。\n感谢游玩，愿这段经历为你留下一点思考。\n\n本作有音乐，可以在右上角切换开关。\n建议佩戴耳机游玩。'}
+    {title:'愿你有所收获',text:'预计游玩约十五分钟，可按自己的节奏阅读。选择不会被评分。\n故事并不难，请尽量尝试抵达最终结局。\n感谢游玩，愿这段经历为你留下一点思考。\n\n本作有音乐，可以在右上角切换开关。\n建议佩戴耳机游玩。'}
   ];
   let helpSeen=false,musicChoiceSeen=false,helpIndex=0;
   let paragraphs=story.introduction,mode='introduction';
   const layer=document.getElementById('introduction'),text=document.getElementById('intro-copy'),main=document.getElementById('game-main');
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finaleTransition=reduced?{black:60,rise:240,white:60}:{black:160,rise:1800,white:200};
+  const conclusionEntry=reduced?{fade:1,hold:3998,reveal:1}:{fade:1500,hold:2000,reveal:500};
   let timeline=[],closing=null;
   function fitDuration(parts,budget){
     const fields=parts.flatMap(part=>Object.keys(part).map(key=>({part,key,weight:part[key]})));
@@ -41,6 +42,14 @@
   function arm(){if(!playing||document.hidden)return;started=Date.now();timer=setTimeout(()=>{timer=0;const callback=next;next=null;callback();},remaining);}
   function wait(ms,callback){clearTimeout(timer);remaining=ms;next=callback;arm();}
   function phase(value){layer.dataset.phase=value;}
+  function enterConclusion(){
+    text.textContent='';layer.dataset.paragraph='';phase('entry-fade');
+    wait(conclusionEntry.fade,()=>{
+      phase('entry-hold');wait(conclusionEntry.hold,()=>{
+        phase('entry-reveal');wait(conclusionEntry.reveal,paragraph);
+      });
+    });
+  }
   function enterFinale(){
     layer.dataset.transition='black';phase('threshold');
     wait(finaleTransition.black,()=>{
@@ -95,7 +104,7 @@
   }
   function beginPresentation(){
     layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');
-    if(callbacks.skipOpening)finish();else{window.MeaningMusic.sequence(mode==='conclusion'?'ending':'opening');paragraph();}
+    if(callbacks.skipOpening)finish();else{window.MeaningMusic.sequence(mode==='conclusion'?'ending':'opening');if(mode==='conclusion')enterConclusion();else paragraph();}
     layer.focus({preventScroll:true});
   }
   function renderHelp(){
@@ -125,9 +134,10 @@
   document.getElementById('help-music-off').onclick=()=>chooseMusic(false);
   function playSequence(handlers,type){
     if(playing)return;playing=true;mode=type;paragraphs=type==='conclusion'?story.conclusion:story.introduction;callbacks=handlers;index=0;previousInert=main.inert;
-    main.inert=true;layer.classList.toggle('conclusion',mode==='conclusion');layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');layer.style.setProperty('--daylight','0');document.body.classList.add('intro-playing');layer.hidden=false;layer.classList.remove('is-paused');
+    main.inert=true;layer.classList.toggle('conclusion',mode==='conclusion');layer.setAttribute('aria-label',mode==='conclusion'?'结语':'开场白');layer.style.setProperty('--daylight','0');layer.dataset.section=mode==='conclusion'?'reflection':'opening';layer.dataset.finalePart='';layer.dataset.entrance='false';document.body.classList.add('intro-playing');layer.hidden=false;layer.classList.remove('is-paused');
     prepareTimeline();if(callbacks.skipOpening)closing={cover:reduced?1:180,gap:0,reveal:reduced?1:420};
     layer.dataset.transition='';layer.style.setProperty('--finale-rise',finaleTransition.rise+'ms');
+    layer.style.setProperty('--conclusion-entry-in',conclusionEntry.fade+'ms');layer.style.setProperty('--conclusion-entry-out',conclusionEntry.reveal+'ms');
     layer.style.setProperty('--intro-black',closing.cover+'ms');layer.style.setProperty('--intro-reveal',closing.reveal+'ms');
     layer.dataset.presentation=callbacks.skipOpening?'card':'sequence';
     if(callbacks.help&&(!helpSeen||!musicChoiceSeen)){helpIndex=helpSeen?helpPages.length-1:0;renderHelp();}else beginPresentation();
